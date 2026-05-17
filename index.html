@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Prop Hunt 3D — Huge Custom Map</title>
+<title>Prop Hunt 3D — Advanced Terrain Collision</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none;}
@@ -90,7 +90,7 @@ canvas{display:block;touch-action:none;}
 <div id="screen">
   <div id="menu">
     <h1>PROP HUNT</h1>
-    <div class="subtitle">3D Hide &amp; Seek (Big Map)</div>
+    <div class="subtitle">3D Hide &amp; Seek (Advanced Map)</div>
     <div class="desc">Hiders disguise as environment props.<br>Seekers hunt down the hidden players.<br>Can you blend in — or will you be found?</div>
     <div class="role-row">
       <div class="role-card sel-hider" id="card-hider" onclick="selectRole('hider')">
@@ -217,7 +217,7 @@ document.body.insertBefore(renderer.domElement,document.body.firstChild);
 
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x87CEEB); 
-scene.fog=new THREE.Fog(0x87CEEB,25,90); // Fog door kar di taaki map bada dikhe
+scene.fog=new THREE.Fog(0x87CEEB,25,90); 
 const camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,0.1,200);
 camera.position.set(0,5,8);
 window.addEventListener('resize',()=>{renderer.setSize(window.innerWidth,window.innerHeight);camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();});
@@ -232,8 +232,26 @@ const dL2=new THREE.DirectionalLight(0xffffff, 0.5);
 dL2.position.set(-8,8,-8);
 scene.add(dL2);
 
-// ── YAHAN MAP BOUNDARY (MAP_HALF) BADA KAR DIYA HAI ──
-const MAP_HALF=40, WALL_H=4.5, GRAV=-18, PLAYER_SPEED=6, PROP_SPEED=2.8, JUMP_VEL=8;
+// Map bounds adjust kar diya
+const MAP_HALF=30, WALL_H=4.5, GRAV=-18, PLAYER_SPEED=6, PROP_SPEED=2.8, JUMP_VEL=8;
+
+// 🔥 ADVANCED FIX: RAYCASTER (Laser Sensor) 🔥
+const raycaster = new THREE.Raycaster();
+const downVector = new THREE.Vector3(0, -1, 0);
+
+function getGroundY(x, z) {
+  if (!customMapModel) return 0; // Agar map load nahi hua to 0
+  
+  // Aasman (height 50) se zameen ki taraf raycast karo
+  raycaster.set(new THREE.Vector3(x, 50, z), downVector);
+  
+  // Check karo zameen kahan touch ho rahi hai
+  const intersects = raycaster.intersectObject(customMapModel, true);
+  if (intersects.length > 0) {
+    return intersects[0].point.y; // Zameen ki real unchai (height) return karo
+  }
+  return 0;
+}
 
 function box(w,h,d,color,opts={}){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color,...opts}));}
 function cyl(rt,rb,h,seg,color,opts={}){return new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),new THREE.MeshLambertMaterial({color,...opts}));}
@@ -255,7 +273,8 @@ function loadCharacterModel() {
     playerAnimations = gltf.animations;
 
     basePlayerModel.scale.set(0.015, 0.015, 0.015);
-    basePlayerModel.position.y = -0.5; 
+    // YAHAN OFFSET HATA DIYA TAAKI EXACT ZAMEEN PAR PAER RAHEIN
+    basePlayerModel.position.y = 0; 
     basePlayerModel.rotation.y = Math.PI; 
 
     basePlayerModel.traverse((node) => {
@@ -285,7 +304,7 @@ function setupAnimations() {
   }
 }
 
-// ─── CUSTOM MAP LOADING LOGIC (GIANT SCALE) ───
+// ─── CUSTOM MAP LOADING LOGIC ───
 let customMapModel = null;
 function loadCustomMap(){
   const loader = new GLTFLoader();
@@ -294,8 +313,8 @@ function loadCustomMap(){
   loader.load(modelUrl, function (gltf) {
     customMapModel = gltf.scene;
     
-    // 💥 MAP KA SIZE YAHAN 15 GUNA (15x) BADA KAR DIYA HAI 💥
-    customMapModel.scale.set(15, 15, 15); 
+    // SCALE 15 SE 6 KAR DIYA, TAAKI MAP BADA BHI RAHE AUR PATHAR BHI REAL LAGEIN
+    customMapModel.scale.set(6, 6, 6); 
     customMapModel.position.set(0, 0, 0);
     customMapModel.traverse((node) => {
       if (node.isMesh) {
@@ -304,10 +323,11 @@ function loadCustomMap(){
       }
     });
     scene.add(customMapModel);
+    console.log("Custom Map Loaded Successfully!");
   });
 }
 
-// ─── TREE LOADING LOGIC (Faila diye hain map mein) ───
+// ─── TREE LOADING LOGIC ───
 let treeModel = null;
 function loadTrees(){
   const loader = new GLTFLoader();
@@ -322,69 +342,68 @@ function loadTrees(){
       }
     });
 
-    // Pedo ko naye bade map ke hisaab se door-door lagaya hai
     const treePositions = [ 
-      [15, 0, 15], [-25, 0, 30], [35, 0, -20], [-30, 0, -25], 
-      [0, 0, -40], [45, 0, 10], [-50, 0, 0], [0, 0, 50] 
+      [15, 0, 15], [-20, 0, 20], [25, 0, -15], [-25, 0, -20], 
+      [0, 0, -25], [20, 0, 5], [-25, 0, 0], [0, 0, 25] 
     ];
     treePositions.forEach(pos => {
       const treeClone = treeModel.clone();
       treeClone.scale.set(0.002, 0.002, 0.002); 
+      // Tree height bhi map ki height ke hisab se dynamic set hogi gameLoop mein
       treeClone.position.set(pos[0], pos[1], pos[2]);
       scene.add(treeClone);
     });
   });
 }
 
-// ── PROPS KO BHI PURE BADE MAP MEIN FAILA DIYA HAI ──
 const PROP_DEFS=[
-  {id:'p1',type:'crate',pos:[-20,0.5,-15],col:0x8B6914,sx:1,sy:1,sz:1},
-  {id:'p2',type:'crate',pos:[-22,0.5,-12],col:0x7A5C10,sx:.8,sy:.8,sz:.8},
-  {id:'p3',type:'crate',pos:[-20,1.5,-15],col:0x8B6914,sx:1,sy:1,sz:1},
-  {id:'p4',type:'barrel',pos:[15,0.6,20],col:0x2E4057,sx:.6,sy:1.2,sz:.6},
-  {id:'p5',type:'barrel',pos:[17,0.6,20],col:0x3A5068,sx:.6,sy:1.2,sz:.6},
-  {id:'p6',type:'barrel',pos:[15,0.6,22],col:0x2E4057,sx:.6,sy:1.2,sz:.6},
-  {id:'p7',type:'chair',pos:[5,0.4,-25],col:0x5C4033,sx:.7,sy:.8,sz:.7},
-  {id:'p8',type:'chair',pos:[10,0.4,-25],col:0x5C4033,sx:.7,sy:.8,sz:.7},
-  {id:'p9',type:'table',pos:[7,0.4,-27],col:0x6D4C41,sx:1.5,sy:.8,sz:.9},
-  {id:'p10',type:'plant',pos:[-7,0.6,7],col:0x2E7D32,sx:.6,sy:1.2,sz:.6},
-  {id:'p11',type:'plant',pos:[-10,0.6,8],col:0x388E3C,sx:.5,sy:1.0,sz:.5},
-  {id:'p12',type:'trash',pos:[25,0.5,-5],col:0x455A64,sx:.5,sy:1.0,sz:.5},
-  {id:'p13',type:'trash',pos:[27,0.5,-5],col:0x546E7A,sx:.5,sy:1.0,sz:.5},
-  {id:'p14',type:'tire',pos:[-30,0.3,25],col:0x212121,sx:.8,sy:.3,sz:.8},
-  {id:'p15',type:'tire',pos:[-27,0.6,25],col:0x212121,sx:.8,sy:.3,sz:.8},
-  {id:'p16',type:'box',pos:[0,0.4,30],col:0xFF8F00,sx:.8,sy:.8,sz:.8},
-  {id:'p17',type:'box',pos:[2,0.4,30],col:0xFFA000,sx:.8,sy:.8,sz:.8},
-  {id:'p18',type:'cone',pos:[-12,0.5,-37],col:0xE64A19,sx:.5,sy:1.0,sz:.5},
-  {id:'p19',type:'cone',pos:[-7,0.5,-37],col:0xE64A19,sx:.5,sy:1.0,sz:.5},
-  {id:'p20',type:'bucket',pos:[35,0.35,12],col:0x1565C0,sx:.5,sy:.7,sz:.5},
-  {id:'p21',type:'crate',pos:[35,0.5,15],col:0x8B6914,sx:1,sy:1,sz:1},
-  {id:'p22',type:'barrel',pos:[-35,0.6,-20],col:0x4E342E,sx:.6,sy:1.2,sz:.6},
-  {id:'p23',type:'plant',pos:[30,0.6,-30],col:0x1B5E20,sx:.7,sy:1.4,sz:.7},
-  {id:'p24',type:'box',pos:[-15,0.4,35],col:0x6A1B9A,sx:.8,sy:.8,sz:.8},
-  {id:'p25',type:'tire',pos:[20,0.3,-35],col:0x212121,sx:.8,sy:.3,sz:.8},
+  {id:'p1',type:'crate',pos:[-15,0,-10],col:0x8B6914,sx:1,sy:1,sz:1},
+  {id:'p2',type:'crate',pos:[-17,0,-8],col:0x7A5C10,sx:.8,sy:.8,sz:.8},
+  {id:'p3',type:'crate',pos:[-15,1,-10],col:0x8B6914,sx:1,sy:1,sz:1},
+  {id:'p4',type:'barrel',pos:[10,0,15],col:0x2E4057,sx:.6,sy:1.2,sz:.6},
+  {id:'p5',type:'barrel',pos:[12,0,15],col:0x3A5068,sx:.6,sy:1.2,sz:.6},
+  {id:'p6',type:'barrel',pos:[10,0,17],col:0x2E4057,sx:.6,sy:1.2,sz:.6},
+  {id:'p7',type:'chair',pos:[5,0,-20],col:0x5C4033,sx:.7,sy:.8,sz:.7},
+  {id:'p8',type:'chair',pos:[10,0,-20],col:0x5C4033,sx:.7,sy:.8,sz:.7},
+  {id:'p9',type:'table',pos:[7,0,-22],col:0x6D4C41,sx:1.5,sy:.8,sz:.9},
+  {id:'p10',type:'plant',pos:[-7,0,7],col:0x2E7D32,sx:.6,sy:1.2,sz:.6},
+  {id:'p11',type:'plant',pos:[-10,0,8],col:0x388E3C,sx:.5,sy:1.0,sz:.5},
+  {id:'p12',type:'trash',pos:[20,0,-5],col:0x455A64,sx:.5,sy:1.0,sz:.5},
+  {id:'p13',type:'trash',pos:[22,0,-5],col:0x546E7A,sx:.5,sy:1.0,sz:.5},
+  {id:'p14',type:'tire',pos:[-25,0,20],col:0x212121,sx:.8,sy:.3,sz:.8},
+  {id:'p15',type:'tire',pos:[-22,0,20],col:0x212121,sx:.8,sy:.3,sz:.8},
+  {id:'p16',type:'box',pos:[0,0,25],col:0xFF8F00,sx:.8,sy:.8,sz:.8},
+  {id:'p17',type:'box',pos:[2,0,25],col:0xFFA000,sx:.8,sy:.8,sz:.8},
+  {id:'p18',type:'cone',pos:[-12,0,-28],col:0xE64A19,sx:.5,sy:1.0,sz:.5},
+  {id:'p19',type:'cone',pos:[-7,0,-28],col:0xE64A19,sx:.5,sy:1.0,sz:.5},
+  {id:'p20',type:'bucket',pos:[25,0,12],col:0x1565C0,sx:.5,sy:.7,sz:.5},
+  {id:'p21',type:'crate',pos:[25,0,15],col:0x8B6914,sx:1,sy:1,sz:1},
+  {id:'p22',type:'barrel',pos:[-25,0,-15],col:0x4E342E,sx:.6,sy:1.2,sz:.6},
+  {id:'p23',type:'plant',pos:[25,0,-25],col:0x1B5E20,sx:.7,sy:1.4,sz:.7},
+  {id:'p24',type:'box',pos:[-15,0,28],col:0x6A1B9A,sx:.8,sy:.8,sz:.8},
+  {id:'p25',type:'tire',pos:[20,0,-25],col:0x212121,sx:.8,sy:.3,sz:.8},
 ];
 
 function makePropMesh(def){
   const{type,col}=def;const g=new THREE.Group();
   const mat=()=>new THREE.MeshLambertMaterial({color:col});
   switch(type){
-    case'crate':{const m=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),mat());m.castShadow=true;g.add(m);break;}
-    case'barrel':{const m=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,1.8,12),mat());m.castShadow=true;g.add(m);break;}
+    case'crate':{const m=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),mat());m.position.y=0.5;m.castShadow=true;g.add(m);break;}
+    case'barrel':{const m=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,1.8,12),mat());m.position.y=0.9;m.castShadow=true;g.add(m);break;}
     case'chair':{
-      const seat=box(1,.1,1,col);seat.position.y=0;g.add(seat);
-      const back=box(1,1.1,.1,col);back.position.set(0,.6,-.45);g.add(back);
-      [[-0.4,-0.35,0.35],[0.4,-0.35,0.35],[-0.4,-0.35,-0.35],[0.4,-0.35,-0.35]].forEach(([x,y,z])=>{const leg=box(.1,.7,.1,col);leg.position.set(x,y,z);g.add(leg);});break;}
+      const seat=box(1,.1,1,col);seat.position.y=0.4;g.add(seat);
+      const back=box(1,1.1,.1,col);back.position.set(0,1,-.45);g.add(back);
+      [[-0.4,0,0.35],[0.4,0,0.35],[-0.4,0,-0.35],[0.4,0,-0.35]].forEach(([x,y,z])=>{const leg=box(.1,.7,.1,col);leg.position.set(x,0.35,z);g.add(leg);});break;}
     case'table':{
-      const top=box(2,.12,1.2,col);top.position.y=.35;g.add(top);
-      [[-0.85,-0.15,-0.5],[0.85,-0.15,-0.5],[-0.85,-0.15,0.5],[0.85,-0.15,0.5]].forEach(([x,y,z])=>{const leg=box(.1,.8,.1,col);leg.position.set(x,y,z);g.add(leg);});break;}
-    case'plant':{const pot=cyl(.3,.4,.6,8,0x8D6E63);g.add(pot);const lv=sph(.5,col);lv.position.y=.7;lv.castShadow=true;g.add(lv);break;}
-    case'trash':{const m=new THREE.Mesh(new THREE.CylinderGeometry(.4,.35,1,10),mat());m.castShadow=true;g.add(m);break;}
-    case'tire':{const m=new THREE.Mesh(new THREE.TorusGeometry(.5,.18,8,16),mat());m.rotation.x=Math.PI/2;m.castShadow=true;g.add(m);break;}
-    case'box':{const m=new THREE.Mesh(new THREE.BoxGeometry(.8,.8,.8),mat());m.castShadow=true;g.add(m);break;}
-    case'cone':{const m=new THREE.Mesh(new THREE.ConeGeometry(.4,1,8),mat());m.castShadow=true;g.add(m);break;}
-    case'bucket':{const m=new THREE.Mesh(new THREE.CylinderGeometry(.3,.25,.7,10),mat());m.castShadow=true;g.add(m);break;}
-    default:{g.add(new THREE.Mesh(new THREE.BoxGeometry(1,1,1),mat()));}
+      const top=box(2,.12,1.2,col);top.position.y=.75;g.add(top);
+      [[-0.85,0,-0.5],[0.85,0,-0.5],[-0.85,0,0.5],[0.85,0,0.5]].forEach(([x,y,z])=>{const leg=box(.1,.8,.1,col);leg.position.set(x,0.4,z);g.add(leg);});break;}
+    case'plant':{const pot=cyl(.3,.4,.6,8,0x8D6E63);pot.position.y=0.3;g.add(pot);const lv=sph(.5,col);lv.position.y=1;lv.castShadow=true;g.add(lv);break;}
+    case'trash':{const m=new THREE.Mesh(new THREE.CylinderGeometry(.4,.35,1,10),mat());m.position.y=0.5;m.castShadow=true;g.add(m);break;}
+    case'tire':{const m=new THREE.Mesh(new THREE.TorusGeometry(.5,.18,8,16),mat());m.rotation.x=Math.PI/2;m.position.y=0.18;m.castShadow=true;g.add(m);break;}
+    case'box':{const m=new THREE.Mesh(new THREE.BoxGeometry(.8,.8,.8),mat());m.position.y=0.4;m.castShadow=true;g.add(m);break;}
+    case'cone':{const m=new THREE.Mesh(new THREE.ConeGeometry(.4,1,8),mat());m.position.y=0.5;m.castShadow=true;g.add(m);break;}
+    case'bucket':{const m=new THREE.Mesh(new THREE.CylinderGeometry(.3,.25,.7,10),mat());m.position.y=0.35;m.castShadow=true;g.add(m);break;}
+    default:{const m=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),mat());m.position.y=0.5;g.add(m);}
   }
   g.scale.set(def.sx,def.sy,def.sz);return g;
 }
@@ -405,8 +424,8 @@ function buildPlayerMesh(role){
   } else {
     fallbackBox = new THREE.Group();
     const bc=role==='hider'?0x4ecdc4:0xff6b35,lc=role==='hider'?0x1a237e:0xb71c1c;
-    const body=box(.5,.7,.3,bc);body.position.y=.4;body.castShadow=true;fallbackBox.add(body);
-    const head=box(.4,.4,.4,0xf8e1c8);head.position.y=1.05;head.castShadow=true;fallbackBox.add(head);
+    const body=box(.5,.7,.3,bc);body.position.y=.35;body.castShadow=true;fallbackBox.add(body);
+    const head=box(.4,.4,.4,0xf8e1c8);head.position.y=1;head.castShadow=true;fallbackBox.add(head);
     if(role==='seeker'){const gun=box(.1,.1,.5,0x333333);gun.position.set(.35,.35,-.28);fallbackBox.add(gun);}
     playerMesh.add(fallbackBox);
   }
@@ -435,12 +454,8 @@ function revertTransform(){
   if(playerMesh)playerMesh.visible=true;
 }
 
-function groundY(x,z){
-  return 0; 
-}
-
-const AI_SPAWNS=[[-30,.5,-30],[30,.5,30],[-30,.5,30]];
-const AI_WPS=[[-20,.5,-20],[20,.5,-20],[20,.5,20],[-20,.5,20],[0,.5,0],[-25,.5,0],[25,.5,0],[0,.5,-25],[0,.5,25]];
+const AI_SPAWNS=[[-25,.5,-25],[25,.5,25],[-25,.5,25]];
+const AI_WPS=[[-20,.5,-20],[20,.5,-20],[20,.5,20],[-20,.5,20],[0,.5,0],[-15,.5,0],[15,.5,0],[0,.5,-15],[0,.5,15]];
 const aiSeekers=[];
 
 function buildAISeekers(){
@@ -448,22 +463,18 @@ function buildAISeekers(){
   if(G.role!=='hider')return;
   AI_SPAWNS.forEach((spawn,i)=>{
     const g=new THREE.Group();
-    const body=box(.5,.7,.3,0xcc3300);body.position.y=.4;body.castShadow=true;g.add(body);
-    const head=box(.4,.4,.4,0xffd180);head.position.y=1.05;head.castShadow=true;g.add(head);
-    const eL=box(.1,.1,.02,0x330000);eL.position.set(-.1,1.08,.21);g.add(eL);
-    const eR=box(.1,.1,.02,0x330000);eR.position.set(.1,1.08,.21);g.add(eR);
-    const lL=box(.2,.5,.25,0x7b1515);lL.position.set(-.13,-.1,0);lL.castShadow=true;g.add(lL);
-    const lR=box(.2,.5,.25,0x7b1515);lR.position.set(.13,-.1,0);lR.castShadow=true;g.add(lR);
-    const aL=box(.15,.55,.2,0xcc3300);aL.position.set(-.35,.35,0);aL.castShadow=true;g.add(aL);
-    const aR=box(.15,.55,.2,0xcc3300);aR.position.set(.35,.35,0);aR.castShadow=true;g.add(aR);
-    const hat=cyl(.22,.25,.3,8,0x1a0000);hat.position.y=1.35;g.add(hat);
+    const body=box(.5,.7,.3,0xcc3300);body.position.y=.35;body.castShadow=true;g.add(body);
+    const head=box(.4,.4,.4,0xffd180);head.position.y=1;head.castShadow=true;g.add(head);
+    const eL=box(.1,.1,.02,0x330000);eL.position.set(-.1,1.03,.21);g.add(eL);
+    const eR=box(.1,.1,.02,0x330000);eR.position.set(.1,1.03,.21);g.add(eR);
+    const hat=cyl(.22,.25,.3,8,0x1a0000);hat.position.y=1.3;g.add(hat);
     const dot=sph(.1,0xff0000,{emissive:new THREE.Color(0xff0000),emissiveIntensity:1});dot.position.y=2.2;dot.visible=false;g.add(dot);
     g.position.set(...spawn);scene.add(g);
     aiSeekers.push({mesh:g,dot,pos:new THREE.Vector3(...spawn),vel:new THREE.Vector3(),state:'patrol',wpIdx:Math.floor(Math.random()*AI_WPS.length),damageCd:0,searchTimer:0,t:0});
   });
 }
 
-const AI_HIDER_SPAWNS=[[-20,.5,20],[30,.5,-15],[-12,.5,-30]];
+const AI_HIDER_SPAWNS=[[-20,.5,20],[20,.5,-15],[-10,.5,-20]];
 const aiHiders=[];
 function buildAIHiders(){
   aiHiders.forEach(h=>scene.remove(h.mesh));aiHiders.length=0;
@@ -563,7 +574,10 @@ function updateAISeekers(dt){
     else{const wp=AI_WPS[sk.wpIdx];target=new THREE.Vector3(wp[0],sk.pos.y,wp[2]);if(sk.pos.distanceTo(target)<1.5)sk.wpIdx=(sk.wpIdx+1)%AI_WPS.length;speed=2.5;}
     const dir=new THREE.Vector3().subVectors(target,sk.pos);dir.y=0;const dl=dir.length();
     if(dl>0.1){dir.normalize();sk.pos.addScaledVector(dir,speed*dt);}
-    sk.pos.y=groundY(sk.pos.x,sk.pos.z)+0.5;
+    
+    // RAYCASTER FIX AI KE LIYE
+    sk.pos.y = getGroundY(sk.pos.x, sk.pos.z);
+    
     sk.pos.x=Math.max(-MAP_HALF,Math.min(MAP_HALF,sk.pos.x));sk.pos.z=Math.max(-MAP_HALF,Math.min(MAP_HALF,sk.pos.z));
     sk.mesh.position.copy(sk.pos);
     if(dl>0.1){const a=Math.atan2(target.x-sk.pos.x,target.z-sk.pos.z);sk.mesh.rotation.y=a;}
@@ -576,7 +590,11 @@ function updateAISeekers(dt){
 
 function updateAIHiders(dt){
   if(G.role!=='seeker')return;
-  aiHiders.forEach(h=>{if(!h.alive)return;h.moveCd-=dt;if(h.moveCd<=0){h.moveCd=2+Math.random()*3;h.moveDir.set(Math.random()-.5,0,Math.random()-.5).normalize();}h.pos.addScaledVector(h.moveDir,1.5*dt);h.pos.x=Math.max(-MAP_HALF,Math.min(MAP_HALF,h.pos.x));h.pos.z=Math.max(-MAP_HALF,Math.min(MAP_HALF,h.pos.z));h.pos.y=groundY(h.pos.x,h.pos.z)+0.5;h.mesh.position.copy(h.pos);});
+  aiHiders.forEach(h=>{if(!h.alive)return;h.moveCd-=dt;if(h.moveCd<=0){h.moveCd=2+Math.random()*3;h.moveDir.set(Math.random()-.5,0,Math.random()-.5).normalize();}h.pos.addScaledVector(h.moveDir,1.5*dt);h.pos.x=Math.max(-MAP_HALF,Math.min(MAP_HALF,h.pos.x));h.pos.z=Math.max(-MAP_HALF,Math.min(MAP_HALF,h.pos.z));
+    // RAYCASTER FIX AI HIDERS KE LIYE
+    h.pos.y = getGroundY(h.pos.x, h.pos.z);
+    h.mesh.position.copy(h.pos);
+  });
 }
 
 const _tv=new THREE.Vector3();
@@ -762,18 +780,18 @@ function gameLoop() {
     player.pos.z += player.vel.z * dt;
     player.pos.y += player.vel.y * dt;
 
-    const gy = groundY(player.pos.x, player.pos.z);
-    if(player.pos.y <= gy + 0.5) {
-      player.pos.y   = gy + 0.5;
+    // 🔥 RAYCASTER COLLISION APPLIED 🔥
+    const gy = getGroundY(player.pos.x, player.pos.z);
+    if(player.pos.y <= gy) {
+      player.pos.y   = gy;
       player.vel.y   = 0;
       player.onGround = true;
     } else {
       player.onGround = false;
     }
 
-    // YAHAN MAP_HALF*2 USE HO RAHA HAI, BOUNDARIES AB -80 SE 80 HAIN
-    player.pos.x = Math.max(-MAP_HALF*2, Math.min(MAP_HALF*2, player.pos.x));
-    player.pos.z = Math.max(-MAP_HALF*2, Math.min(MAP_HALF*2, player.pos.z));
+    player.pos.x = Math.max(-MAP_HALF, Math.min(MAP_HALF, player.pos.x));
+    player.pos.z = Math.max(-MAP_HALF, Math.min(MAP_HALF, player.pos.z));
 
     if(playerMesh) {
       playerMesh.position.copy(player.pos);
