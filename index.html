@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Prop Hunt 3D — Rocky Ground Map</title>
+<title>Prop Hunt 3D — Huge Custom Map</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none;}
@@ -90,7 +90,7 @@ canvas{display:block;touch-action:none;}
 <div id="screen">
   <div id="menu">
     <h1>PROP HUNT</h1>
-    <div class="subtitle">3D Hide &amp; Seek</div>
+    <div class="subtitle">3D Hide &amp; Seek (Big Map)</div>
     <div class="desc">Hiders disguise as environment props.<br>Seekers hunt down the hidden players.<br>Can you blend in — or will you be found?</div>
     <div class="role-row">
       <div class="role-card sel-hider" id="card-hider" onclick="selectRole('hider')">
@@ -217,8 +217,8 @@ document.body.insertBefore(renderer.domElement,document.body.firstChild);
 
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x87CEEB); 
-scene.fog=new THREE.Fog(0x87CEEB,22,55);
-const camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,0.1,100);
+scene.fog=new THREE.Fog(0x87CEEB,25,90); // Fog door kar di taaki map bada dikhe
+const camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,0.1,200);
 camera.position.set(0,5,8);
 window.addEventListener('resize',()=>{renderer.setSize(window.innerWidth,window.innerHeight);camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();});
 
@@ -232,7 +232,8 @@ const dL2=new THREE.DirectionalLight(0xffffff, 0.5);
 dL2.position.set(-8,8,-8);
 scene.add(dL2);
 
-const MAP_HALF=19,WALL_H=4.5,GRAV=-18,PLAYER_SPEED=6,PROP_SPEED=2.8,JUMP_VEL=8;
+// ── YAHAN MAP BOUNDARY (MAP_HALF) BADA KAR DIYA HAI ──
+const MAP_HALF=40, WALL_H=4.5, GRAV=-18, PLAYER_SPEED=6, PROP_SPEED=2.8, JUMP_VEL=8;
 
 function box(w,h,d,color,opts={}){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color,...opts}));}
 function cyl(rt,rb,h,seg,color,opts={}){return new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),new THREE.MeshLambertMaterial({color,...opts}));}
@@ -272,11 +273,6 @@ function loadCharacterModel() {
       playerMesh.add(basePlayerModel);
       setupAnimations();
     }
-    console.log("Player Character Loaded!");
-  }, 
-  undefined, 
-  function (error) {
-    console.error('Error loading Character:', error);
   });
 }
 
@@ -289,19 +285,17 @@ function setupAnimations() {
   }
 }
 
-// ─── CUSTOM MAP LOADING LOGIC ───
+// ─── CUSTOM MAP LOADING LOGIC (GIANT SCALE) ───
 let customMapModel = null;
 function loadCustomMap(){
   const loader = new GLTFLoader();
-  
-  // 👉 YAHAN NAYA MAP ADD KIYA HAI 👈
   const modelUrl = 'rocky_ground_with_moss (1).glb'; 
 
   loader.load(modelUrl, function (gltf) {
     customMapModel = gltf.scene;
     
-    // Agar map bahut chota lage, to 1, 1, 1 ko badha kar 5, 5, 5 ya 10, 10, 10 kar dena
-    customMapModel.scale.set(1, 1, 1); 
+    // 💥 MAP KA SIZE YAHAN 15 GUNA (15x) BADA KAR DIYA HAI 💥
+    customMapModel.scale.set(15, 15, 15); 
     customMapModel.position.set(0, 0, 0);
     customMapModel.traverse((node) => {
       if (node.isMesh) {
@@ -310,11 +304,10 @@ function loadCustomMap(){
       }
     });
     scene.add(customMapModel);
-    console.log("Custom Map Loaded Successfully!");
   });
 }
 
-// ─── TREE LOADING LOGIC ───
+// ─── TREE LOADING LOGIC (Faila diye hain map mein) ───
 let treeModel = null;
 function loadTrees(){
   const loader = new GLTFLoader();
@@ -329,43 +322,47 @@ function loadTrees(){
       }
     });
 
-    const treePositions = [ [5, 0, 5], [-8, 0, 12], [10, 0, -10], [-12, 0, -8], [0, 0, -15] ];
+    // Pedo ko naye bade map ke hisaab se door-door lagaya hai
+    const treePositions = [ 
+      [15, 0, 15], [-25, 0, 30], [35, 0, -20], [-30, 0, -25], 
+      [0, 0, -40], [45, 0, 10], [-50, 0, 0], [0, 0, 50] 
+    ];
     treePositions.forEach(pos => {
       const treeClone = treeModel.clone();
       treeClone.scale.set(0.002, 0.002, 0.002); 
       treeClone.position.set(pos[0], pos[1], pos[2]);
       scene.add(treeClone);
     });
-    console.log("PSX Birch Trees Loaded Successfully!");
   });
 }
 
+// ── PROPS KO BHI PURE BADE MAP MEIN FAILA DIYA HAI ──
 const PROP_DEFS=[
-  {id:'p1',type:'crate',pos:[-8,0.5,-6],col:0x8B6914,sx:1,sy:1,sz:1},
-  {id:'p2',type:'crate',pos:[-9,0.5,-5],col:0x7A5C10,sx:.8,sy:.8,sz:.8},
-  {id:'p3',type:'crate',pos:[-8,1.5,-6],col:0x8B6914,sx:1,sy:1,sz:1},
-  {id:'p4',type:'barrel',pos:[6,0.6,8],col:0x2E4057,sx:.6,sy:1.2,sz:.6},
-  {id:'p5',type:'barrel',pos:[7,0.6,8],col:0x3A5068,sx:.6,sy:1.2,sz:.6},
-  {id:'p6',type:'barrel',pos:[6,0.6,9],col:0x2E4057,sx:.6,sy:1.2,sz:.6},
-  {id:'p7',type:'chair',pos:[2,0.4,-10],col:0x5C4033,sx:.7,sy:.8,sz:.7},
-  {id:'p8',type:'chair',pos:[4,0.4,-10],col:0x5C4033,sx:.7,sy:.8,sz:.7},
-  {id:'p9',type:'table',pos:[3,0.4,-11],col:0x6D4C41,sx:1.5,sy:.8,sz:.9},
-  {id:'p10',type:'plant',pos:[-3,0.6,3],col:0x2E7D32,sx:.6,sy:1.2,sz:.6},
-  {id:'p11',type:'plant',pos:[-4,0.6,3.5],col:0x388E3C,sx:.5,sy:1.0,sz:.5},
-  {id:'p12',type:'trash',pos:[10,0.5,-2],col:0x455A64,sx:.5,sy:1.0,sz:.5},
-  {id:'p13',type:'trash',pos:[11,0.5,-2],col:0x546E7A,sx:.5,sy:1.0,sz:.5},
-  {id:'p14',type:'tire',pos:[-12,0.3,10],col:0x212121,sx:.8,sy:.3,sz:.8},
-  {id:'p15',type:'tire',pos:[-11,0.6,10],col:0x212121,sx:.8,sy:.3,sz:.8},
-  {id:'p16',type:'box',pos:[0,0.4,12],col:0xFF8F00,sx:.8,sy:.8,sz:.8},
-  {id:'p17',type:'box',pos:[1,0.4,12],col:0xFFA000,sx:.8,sy:.8,sz:.8},
-  {id:'p18',type:'cone',pos:[-5,0.5,-15],col:0xE64A19,sx:.5,sy:1.0,sz:.5},
-  {id:'p19',type:'cone',pos:[-3,0.5,-15],col:0xE64A19,sx:.5,sy:1.0,sz:.5},
-  {id:'p20',type:'bucket',pos:[14,0.35,5],col:0x1565C0,sx:.5,sy:.7,sz:.5},
-  {id:'p21',type:'crate',pos:[14,0.5,6],col:0x8B6914,sx:1,sy:1,sz:1},
-  {id:'p22',type:'barrel',pos:[-14,0.6,-8],col:0x4E342E,sx:.6,sy:1.2,sz:.6},
-  {id:'p23',type:'plant',pos:[12,0.6,-12],col:0x1B5E20,sx:.7,sy:1.4,sz:.7},
-  {id:'p24',type:'box',pos:[-6,0.4,14],col:0x6A1B9A,sx:.8,sy:.8,sz:.8},
-  {id:'p25',type:'tire',pos:[8,0.3,-14],col:0x212121,sx:.8,sy:.3,sz:.8},
+  {id:'p1',type:'crate',pos:[-20,0.5,-15],col:0x8B6914,sx:1,sy:1,sz:1},
+  {id:'p2',type:'crate',pos:[-22,0.5,-12],col:0x7A5C10,sx:.8,sy:.8,sz:.8},
+  {id:'p3',type:'crate',pos:[-20,1.5,-15],col:0x8B6914,sx:1,sy:1,sz:1},
+  {id:'p4',type:'barrel',pos:[15,0.6,20],col:0x2E4057,sx:.6,sy:1.2,sz:.6},
+  {id:'p5',type:'barrel',pos:[17,0.6,20],col:0x3A5068,sx:.6,sy:1.2,sz:.6},
+  {id:'p6',type:'barrel',pos:[15,0.6,22],col:0x2E4057,sx:.6,sy:1.2,sz:.6},
+  {id:'p7',type:'chair',pos:[5,0.4,-25],col:0x5C4033,sx:.7,sy:.8,sz:.7},
+  {id:'p8',type:'chair',pos:[10,0.4,-25],col:0x5C4033,sx:.7,sy:.8,sz:.7},
+  {id:'p9',type:'table',pos:[7,0.4,-27],col:0x6D4C41,sx:1.5,sy:.8,sz:.9},
+  {id:'p10',type:'plant',pos:[-7,0.6,7],col:0x2E7D32,sx:.6,sy:1.2,sz:.6},
+  {id:'p11',type:'plant',pos:[-10,0.6,8],col:0x388E3C,sx:.5,sy:1.0,sz:.5},
+  {id:'p12',type:'trash',pos:[25,0.5,-5],col:0x455A64,sx:.5,sy:1.0,sz:.5},
+  {id:'p13',type:'trash',pos:[27,0.5,-5],col:0x546E7A,sx:.5,sy:1.0,sz:.5},
+  {id:'p14',type:'tire',pos:[-30,0.3,25],col:0x212121,sx:.8,sy:.3,sz:.8},
+  {id:'p15',type:'tire',pos:[-27,0.6,25],col:0x212121,sx:.8,sy:.3,sz:.8},
+  {id:'p16',type:'box',pos:[0,0.4,30],col:0xFF8F00,sx:.8,sy:.8,sz:.8},
+  {id:'p17',type:'box',pos:[2,0.4,30],col:0xFFA000,sx:.8,sy:.8,sz:.8},
+  {id:'p18',type:'cone',pos:[-12,0.5,-37],col:0xE64A19,sx:.5,sy:1.0,sz:.5},
+  {id:'p19',type:'cone',pos:[-7,0.5,-37],col:0xE64A19,sx:.5,sy:1.0,sz:.5},
+  {id:'p20',type:'bucket',pos:[35,0.35,12],col:0x1565C0,sx:.5,sy:.7,sz:.5},
+  {id:'p21',type:'crate',pos:[35,0.5,15],col:0x8B6914,sx:1,sy:1,sz:1},
+  {id:'p22',type:'barrel',pos:[-35,0.6,-20],col:0x4E342E,sx:.6,sy:1.2,sz:.6},
+  {id:'p23',type:'plant',pos:[30,0.6,-30],col:0x1B5E20,sx:.7,sy:1.4,sz:.7},
+  {id:'p24',type:'box',pos:[-15,0.4,35],col:0x6A1B9A,sx:.8,sy:.8,sz:.8},
+  {id:'p25',type:'tire',pos:[20,0.3,-35],col:0x212121,sx:.8,sy:.3,sz:.8},
 ];
 
 function makePropMesh(def){
@@ -442,8 +439,8 @@ function groundY(x,z){
   return 0; 
 }
 
-const AI_SPAWNS=[[-15,.5,-15],[15,.5,15],[-15,.5,15]];
-const AI_WPS=[[-10,.5,-10],[10,.5,-10],[10,.5,10],[-10,.5,10],[0,.5,0],[-12,.5,0],[12,.5,0],[0,.5,-14],[0,.5,14]];
+const AI_SPAWNS=[[-30,.5,-30],[30,.5,30],[-30,.5,30]];
+const AI_WPS=[[-20,.5,-20],[20,.5,-20],[20,.5,20],[-20,.5,20],[0,.5,0],[-25,.5,0],[25,.5,0],[0,.5,-25],[0,.5,25]];
 const aiSeekers=[];
 
 function buildAISeekers(){
@@ -466,7 +463,7 @@ function buildAISeekers(){
   });
 }
 
-const AI_HIDER_SPAWNS=[[-8,.5,8],[12,.5,-6],[-5,.5,-12]];
+const AI_HIDER_SPAWNS=[[-20,.5,20],[30,.5,-15],[-12,.5,-30]];
 const aiHiders=[];
 function buildAIHiders(){
   aiHiders.forEach(h=>scene.remove(h.mesh));aiHiders.length=0;
@@ -774,6 +771,7 @@ function gameLoop() {
       player.onGround = false;
     }
 
+    // YAHAN MAP_HALF*2 USE HO RAHA HAI, BOUNDARIES AB -80 SE 80 HAIN
     player.pos.x = Math.max(-MAP_HALF*2, Math.min(MAP_HALF*2, player.pos.x));
     player.pos.z = Math.max(-MAP_HALF*2, Math.min(MAP_HALF*2, player.pos.z));
 
@@ -783,7 +781,6 @@ function gameLoop() {
         playerMesh.rotation.y = player.yaw;
     }
     
-    // ── ANIMATION UPDATE LOGIC ──
     if (playerMixer) {
       playerMixer.update(dt);
       if (currentAction) {
