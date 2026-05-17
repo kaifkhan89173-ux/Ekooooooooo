@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Prop Hunt 3D — Advanced Joystick Fix</title>
+<title>Prop Hunt 3D — Flat Ground & Smooth Joystick</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none;touch-action:none;}
@@ -90,7 +90,7 @@ canvas{display:block;touch-action:none;}
 <div id="screen">
   <div id="menu">
     <h1>PROP HUNT</h1>
-    <div class="subtitle">3D Hide &amp; Seek</div>
+    <div class="subtitle">3D Hide &amp; Seek (Flat Map)</div>
     <div class="desc">Hiders disguise as environment props.<br>Seekers hunt down the hidden players.<br>Can you blend in — or will you be found?</div>
     <div class="role-row">
       <div class="role-card sel-hider" id="card-hider" onclick="selectRole('hider')">
@@ -234,19 +234,8 @@ scene.add(dL2);
 
 const MAP_HALF=30, WALL_H=4.5, GRAV=-18, PLAYER_SPEED=6, PROP_SPEED=2.8, JUMP_VEL=8;
 
-// 🔥 ADVANCED FIX: RAYCASTER (Laser Sensor) 🔥
-const raycaster = new THREE.Raycaster();
-const downVector = new THREE.Vector3(0, -1, 0);
-
-function getGroundY(x, z) {
-  if (!customMapModel) return 0; 
-  raycaster.set(new THREE.Vector3(x, 50, z), downVector);
-  const intersects = raycaster.intersectObject(customMapModel, true);
-  if (intersects.length > 0) {
-    return intersects[0].point.y; 
-  }
-  return 0;
-}
+// Map ekdum flat ho gaya hai, isliye height humesha 0 rahegi
+function getGroundY(x, z) { return 0; }
 
 function box(w,h,d,color,opts={}){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color,...opts}));}
 function cyl(rt,rb,h,seg,color,opts={}){return new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),new THREE.MeshLambertMaterial({color,...opts}));}
@@ -298,7 +287,7 @@ function setupAnimations() {
   }
 }
 
-// ─── CUSTOM MAP LOADING LOGIC ───
+// ─── CUSTOM MAP LOADING LOGIC (FLATTENED) ───
 let customMapModel = null;
 function loadCustomMap(){
   const loader = new GLTFLoader();
@@ -306,7 +295,9 @@ function loadCustomMap(){
 
   loader.load(modelUrl, function (gltf) {
     customMapModel = gltf.scene;
-    customMapModel.scale.set(6, 6, 6); 
+    
+    // Y-SCALE KO 0.01 KAR DIYA HAI TAAKI MAP EKDUM FLAT (FARSH JAISA) BAN JAYE
+    customMapModel.scale.set(6, 0.01, 6); 
     customMapModel.position.set(0, 0, 0);
     customMapModel.traverse((node) => {
       if (node.isMesh) {
@@ -400,7 +391,7 @@ function makePropMesh(def){
 
 function buildProps(){PROP_DEFS.forEach(def=>{const g=makePropMesh(def);g.position.set(...def.pos);scene.add(g);});}
 
-const player={pos:new THREE.Vector3(0,1,0),vel:new THREE.Vector3(),onGround:false,yaw:0,pitch:.22,shootCooldown:0,mesh:null};
+const player={pos:new THREE.Vector3(0,0,0),vel:new THREE.Vector3(),onGround:false,yaw:0,pitch:.22,shootCooldown:0,mesh:null};
 let playerMesh=null,transformedMesh=null,transformedDot=null;
 
 function buildPlayerMesh(role){
@@ -444,8 +435,8 @@ function revertTransform(){
   if(playerMesh)playerMesh.visible=true;
 }
 
-const AI_SPAWNS=[[-25,.5,-25],[25,.5,25],[-25,.5,25]];
-const AI_WPS=[[-20,.5,-20],[20,.5,-20],[20,.5,20],[-20,.5,20],[0,.5,0],[-15,.5,0],[15,.5,0],[0,.5,-15],[0,.5,15]];
+const AI_SPAWNS=[[-25,0,-25],[25,0,25],[-25,0,25]];
+const AI_WPS=[[-20,0,-20],[20,0,-20],[20,0,20],[-20,0,20],[0,0,0],[-15,0,0],[15,0,0],[0,0,-15],[0,0,15]];
 const aiSeekers=[];
 
 function buildAISeekers(){
@@ -464,7 +455,7 @@ function buildAISeekers(){
   });
 }
 
-const AI_HIDER_SPAWNS=[[-20,.5,20],[20,.5,-15],[-10,.5,-20]];
+const AI_HIDER_SPAWNS=[[-20,0,20],[20,0,-15],[-10,0,-20]];
 const aiHiders=[];
 function buildAIHiders(){
   aiHiders.forEach(h=>scene.remove(h.mesh));aiHiders.length=0;
@@ -492,7 +483,6 @@ const keys={};
 window.addEventListener('keydown',e=>{keys[e.code]=true;if(G.phase!=='playing')return;if(e.code==='KeyE')doTransform();if(e.code==='KeyT')doTaunt();if(e.code==='KeyF')doShoot();});
 window.addEventListener('keyup',e=>keys[e.code]=false);
 
-// 🔥 ADVANCED FIX: NATIVE TOUCH EVENTS FOR JOYSTICK 🔥
 const joy={x:0,y:0,active:false,pid:null,ox:0,oy:0};
 const camTouch={pid:null,lx:0,ly:0};
 const JRAD=52;
@@ -558,7 +548,6 @@ window.addEventListener('mouseup', e => {
   if(joy.active && joy.pid === 'mouse') resetJoy();
 });
 
-// 🔥 ADVANCED FIX: NATIVE TOUCH EVENTS FOR CAMERA 🔥
 const camArea = document.getElementById('cam-area');
 camArea.addEventListener('touchstart', e => {
   e.preventDefault();
@@ -589,7 +578,6 @@ const endCam = e => {
 camArea.addEventListener('touchend', endCam);
 camArea.addEventListener('touchcancel', endCam);
 
-// MOUSE EVENTS FOR CAMERA (PC fallback)
 let mouseDown=false, lastMX=0, lastMY=0;
 renderer.domElement.addEventListener('mousedown',e=>{mouseDown=true;lastMX=e.clientX;lastMY=e.clientY;});
 renderer.domElement.addEventListener('mousemove',e=>{if(!mouseDown||G.phase!=='playing')return;player.yaw-=(e.clientX-lastMX)*.008;player.pitch=Math.max(-.6,Math.min(.7,player.pitch+(e.clientY-lastMY)*.008));lastMX=e.clientX;lastMY=e.clientY;});
@@ -599,7 +587,6 @@ renderer.domElement.addEventListener('dblclick',()=>renderer.domElement.requestP
 document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement===renderer.domElement){document.addEventListener('mousemove',onLockMove);}else{document.removeEventListener('mousemove',onLockMove);}});
 function onLockMove(e){if(G.phase!=='playing')return;player.yaw-=e.movementX*.008;player.pitch=Math.max(-.6,Math.min(.7,player.pitch+e.movementY*.008));}
 
-// BUTTONS FIX
 function bindBtn(id, fn) {
   const el = document.getElementById(id);
   if(!el) return;
@@ -648,7 +635,7 @@ function updateAISeekers(dt){
     const dir=new THREE.Vector3().subVectors(target,sk.pos);dir.y=0;const dl=dir.length();
     if(dl>0.1){dir.normalize();sk.pos.addScaledVector(dir,speed*dt);}
     
-    sk.pos.y = getGroundY(sk.pos.x, sk.pos.z);
+    sk.pos.y = 0; // Flat ground fix
     
     sk.pos.x=Math.max(-MAP_HALF,Math.min(MAP_HALF,sk.pos.x));sk.pos.z=Math.max(-MAP_HALF,Math.min(MAP_HALF,sk.pos.z));
     sk.mesh.position.copy(sk.pos);
@@ -663,7 +650,7 @@ function updateAISeekers(dt){
 function updateAIHiders(dt){
   if(G.role!=='seeker')return;
   aiHiders.forEach(h=>{if(!h.alive)return;h.moveCd-=dt;if(h.moveCd<=0){h.moveCd=2+Math.random()*3;h.moveDir.set(Math.random()-.5,0,Math.random()-.5).normalize();}h.pos.addScaledVector(h.moveDir,1.5*dt);h.pos.x=Math.max(-MAP_HALF,Math.min(MAP_HALF,h.pos.x));h.pos.z=Math.max(-MAP_HALF,Math.min(MAP_HALF,h.pos.z));
-    h.pos.y = getGroundY(h.pos.x, h.pos.z);
+    h.pos.y = 0; // Flat ground fix
     h.mesh.position.copy(h.pos);
   });
 }
@@ -718,7 +705,7 @@ function startGame() {
   G.score=0; G.kills=0; G.survivalTime=0;
   G.isTransformed=false; G.currentPropType=null; G.nearbyPropId=null;
   G.caughtFlash=false; G.tauntActive=false;
-  player.pos.set(0,5,0); player.vel.set(0,0,0);
+  player.pos.set(0,0,0); player.vel.set(0,0,0);
   player.yaw=0; player.pitch=.22; player.shootCooldown=0;
   bullets.forEach(b => scene.remove(b.mesh)); bullets.length=0;
   revertTransform();
@@ -850,9 +837,9 @@ function gameLoop() {
     player.pos.z += player.vel.z * dt;
     player.pos.y += player.vel.y * dt;
 
-    const gy = getGroundY(player.pos.x, player.pos.z);
-    if(player.pos.y <= gy) {
-      player.pos.y   = gy;
+    // 🔥 FLAT GROUND FIX 🔥
+    if(player.pos.y <= 0) {
+      player.pos.y   = 0;
       player.vel.y   = 0;
       player.onGround = true;
     } else {
