@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Prop Hunt 3D — Custom Map</title>
+<title>Prop Hunt 3D — Custom Map & Trees</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none;}
@@ -232,18 +232,14 @@ function cyl(rt,rb,h,seg,color,opts={}){return new THREE.Mesh(new THREE.Cylinder
 function sph(r,color,opts={}){return new THREE.Mesh(new THREE.SphereGeometry(r,8,6),new THREE.MeshLambertMaterial({color,...opts}));}
 function setShadow(o){o.traverse(c=>{if(c.isMesh){c.castShadow=true;c.receiveShadow=true;}});return o;}
 
-// ─── CUSTOM MAP LOADING LOGIC YAHAN HAI ───
+// ─── CUSTOM MAP LOADING LOGIC ───
 let customMapModel = null;
 function loadCustomMap(){
   const loader = new GLTFLoader();
-  
-  // 👉 Yahan tumhari naye map ki file ka exact naam add kiya gaya hai
   const modelUrl = 'erevan_armenia_and_mount_ararat.glb'; 
 
   loader.load(modelUrl, function (gltf) {
     customMapModel = gltf.scene;
-    
-    // Scale ko 1 rakha hai, jarurat pade to change kar lena (e.g. 10 ya 0.1)
     customMapModel.scale.set(1, 1, 1); 
     customMapModel.position.set(0, 0, 0);
 
@@ -260,11 +256,52 @@ function loadCustomMap(){
   undefined, 
   function (error) {
     console.error('Error loading Map, using fallback ground:', error);
-    // Fallback ground agar file load na ho
     const ground=box(MAP_HALF*4,0.1,MAP_HALF*4,0x557a46); 
     ground.position.y=-0.05;
     ground.receiveShadow=true;
     scene.add(ground);
+  });
+}
+
+// ─── NEW TREE LOADING LOGIC ───
+let treeModel = null;
+function loadTrees(){
+  const loader = new GLTFLoader();
+  const treeUrl = 'psx_birch_tree.glb'; // Tumhara upload kiya gaya ped
+
+  loader.load(treeUrl, function (gltf) {
+    treeModel = gltf.scene;
+    
+    // Shadows on kar rahe hain
+    treeModel.traverse((node) => {
+      if (node.isMesh) {
+        node.castShadow = true;
+        node.receiveShadow = true;
+      }
+    });
+
+    // Hum 5 ped alag-alag jagah par laga rahe hain (x, y, z)
+    // Map ke hisaab se height (y) adjust kar lena agar ped hawa mein uden
+    const treePositions = [
+      [5, 0, 5],
+      [-8, 0, 12],
+      [10, 0, -10],
+      [-12, 0, -8],
+      [0, 0, -15]
+    ];
+
+    treePositions.forEach(pos => {
+      const treeClone = treeModel.clone();
+      treeClone.scale.set(1, 1, 1); // Yahan scale badal kar ped ko bada/chota kar sakte ho (e.g. 2, 2, 2)
+      treeClone.position.set(pos[0], pos[1], pos[2]);
+      scene.add(treeClone);
+    });
+
+    console.log("PSX Birch Trees Loaded Successfully!");
+  }, 
+  undefined, 
+  function (error) {
+    console.error('Error loading Trees:', error);
   });
 }
 
@@ -728,8 +765,9 @@ function gameLoop() {
   renderer.render(scene, camera);
 }
 
-// Map Load kiya aur Game loop start
+// ── MAP AUR TREES LOAD KIYE AUR GAME START KIYA ──
 loadCustomMap();
+loadTrees();  // Naya function yahan call ho raha hai
 buildProps();
 gameLoop();
 
