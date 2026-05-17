@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Prop Hunt 3D — Advanced Terrain Collision</title>
+<title>Prop Hunt 3D — Advanced Joystick Fix</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none;}
+body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none;touch-action:none;}
 canvas{display:block;touch-action:none;}
 #screen{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;}
 #menu{background:radial-gradient(ellipse at center,#1a0a2e 0%,#0d0a1a 65%,#000 100%);width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;overflow-y:auto;}
@@ -67,12 +67,12 @@ canvas{display:block;touch-action:none;}
 #kbd-hint{position:absolute;bottom:18px;right:18px;background:rgba(0,0,0,.58);border-radius:8px;padding:8px 12px;color:rgba(255,255,255,.55);font-size:11px;line-height:1.9;}
 #transform-label{position:absolute;top:145px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.72);border:1px solid #4ecdc4;border-radius:10px;padding:5px 14px;color:#4ecdc4;font-size:12px;}
 #controls{position:fixed;bottom:0;left:0;width:100%;height:220px;pointer-events:none;z-index:30;}
-#joy-area{position:absolute;bottom:28px;left:26px;width:128px;height:128px;pointer-events:all;}
-.joy-base{width:128px;height:128px;border-radius:50%;background:rgba(255,255,255,.1);border:3px solid rgba(255,255,255,.32);position:relative;}
+#joy-area{position:absolute;bottom:28px;left:26px;width:128px;height:128px;pointer-events:all;touch-action:none;}
+.joy-base{width:128px;height:128px;border-radius:50%;background:rgba(255,255,255,.1);border:3px solid rgba(255,255,255,.32);position:relative;touch-action:none;}
 .joy-thumb{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.48);border:2px solid rgba(255,255,255,.8);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;}
-#btns{position:absolute;bottom:28px;right:18px;display:flex;flex-direction:column;gap:10px;pointer-events:all;align-items:flex-end;}
+#btns{position:absolute;bottom:28px;right:18px;display:flex;flex-direction:column;gap:10px;pointer-events:all;align-items:flex-end;touch-action:none;}
 .btn-row{display:flex;gap:10px;align-items:center;}
-.abtn{width:62px;height:62px;border-radius:50%;border:3px solid;font-size:10px;font-weight:bold;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1.2;text-align:center;touch-action:manipulation;transition:transform .1s,opacity .1s;}
+.abtn{width:62px;height:62px;border-radius:50%;border:3px solid;font-size:10px;font-weight:bold;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1.2;text-align:center;touch-action:none;transition:transform .1s,opacity .1s;}
 .abtn:active{transform:scale(.88);opacity:.75;}
 .abtn-jump{background:rgba(255,193,7,.25);border-color:#ffc107;}
 .abtn-taunt{background:rgba(255,107,53,.25);border-color:#ff6b35;}
@@ -81,7 +81,7 @@ canvas{display:block;touch-action:none;}
 .abtn-morph.dim{opacity:.38;}
 .abtn-shoot{background:rgba(255,68,68,.25);border-color:#ff4444;width:70px;height:70px;font-size:11px;}
 .abtn-shoot:active{background:rgba(255,68,68,.7);box-shadow:0 0 18px #ff4444;}
-#cam-area{position:fixed;top:0;right:0;width:55%;height:calc(100vh - 220px);pointer-events:all;z-index:25;}
+#cam-area{position:fixed;top:0;right:0;width:55%;height:calc(100vh - 220px);pointer-events:all;z-index:25;touch-action:none;}
 @keyframes tauntRipple{0%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-50%) scale(5);}}
 </style>
 </head>
@@ -90,7 +90,7 @@ canvas{display:block;touch-action:none;}
 <div id="screen">
   <div id="menu">
     <h1>PROP HUNT</h1>
-    <div class="subtitle">3D Hide &amp; Seek (Advanced Map)</div>
+    <div class="subtitle">3D Hide &amp; Seek</div>
     <div class="desc">Hiders disguise as environment props.<br>Seekers hunt down the hidden players.<br>Can you blend in — or will you be found?</div>
     <div class="role-row">
       <div class="role-card sel-hider" id="card-hider" onclick="selectRole('hider')">
@@ -232,7 +232,6 @@ const dL2=new THREE.DirectionalLight(0xffffff, 0.5);
 dL2.position.set(-8,8,-8);
 scene.add(dL2);
 
-// Map bounds adjust kar diya
 const MAP_HALF=30, WALL_H=4.5, GRAV=-18, PLAYER_SPEED=6, PROP_SPEED=2.8, JUMP_VEL=8;
 
 // 🔥 ADVANCED FIX: RAYCASTER (Laser Sensor) 🔥
@@ -240,15 +239,11 @@ const raycaster = new THREE.Raycaster();
 const downVector = new THREE.Vector3(0, -1, 0);
 
 function getGroundY(x, z) {
-  if (!customMapModel) return 0; // Agar map load nahi hua to 0
-  
-  // Aasman (height 50) se zameen ki taraf raycast karo
+  if (!customMapModel) return 0; 
   raycaster.set(new THREE.Vector3(x, 50, z), downVector);
-  
-  // Check karo zameen kahan touch ho rahi hai
   const intersects = raycaster.intersectObject(customMapModel, true);
   if (intersects.length > 0) {
-    return intersects[0].point.y; // Zameen ki real unchai (height) return karo
+    return intersects[0].point.y; 
   }
   return 0;
 }
@@ -273,7 +268,6 @@ function loadCharacterModel() {
     playerAnimations = gltf.animations;
 
     basePlayerModel.scale.set(0.015, 0.015, 0.015);
-    // YAHAN OFFSET HATA DIYA TAAKI EXACT ZAMEEN PAR PAER RAHEIN
     basePlayerModel.position.y = 0; 
     basePlayerModel.rotation.y = Math.PI; 
 
@@ -312,8 +306,6 @@ function loadCustomMap(){
 
   loader.load(modelUrl, function (gltf) {
     customMapModel = gltf.scene;
-    
-    // SCALE 15 SE 6 KAR DIYA, TAAKI MAP BADA BHI RAHE AUR PATHAR BHI REAL LAGEIN
     customMapModel.scale.set(6, 6, 6); 
     customMapModel.position.set(0, 0, 0);
     customMapModel.traverse((node) => {
@@ -323,7 +315,6 @@ function loadCustomMap(){
       }
     });
     scene.add(customMapModel);
-    console.log("Custom Map Loaded Successfully!");
   });
 }
 
@@ -349,7 +340,6 @@ function loadTrees(){
     treePositions.forEach(pos => {
       const treeClone = treeModel.clone();
       treeClone.scale.set(0.002, 0.002, 0.002); 
-      // Tree height bhi map ki height ke hisab se dynamic set hogi gameLoop mein
       treeClone.position.set(pos[0], pos[1], pos[2]);
       scene.add(treeClone);
     });
@@ -502,8 +492,105 @@ const keys={};
 window.addEventListener('keydown',e=>{keys[e.code]=true;if(G.phase!=='playing')return;if(e.code==='KeyE')doTransform();if(e.code==='KeyT')doTaunt();if(e.code==='KeyF')doShoot();});
 window.addEventListener('keyup',e=>keys[e.code]=false);
 
-let mouseDown=false,lastMX=0,lastMY=0;
+// 🔥 ADVANCED FIX: NATIVE TOUCH EVENTS FOR JOYSTICK 🔥
+const joy={x:0,y:0,active:false,pid:null,ox:0,oy:0};
+const camTouch={pid:null,lx:0,ly:0};
+const JRAD=52;
 
+const joyBase = document.getElementById('joy-base');
+const joyThumb = document.getElementById('joy-thumb');
+
+function updateJoy(x, y) {
+  const dx = x - joy.ox, dy = y - joy.oy;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  const cd = Math.min(dist, JRAD);
+  const ang = Math.atan2(dy, dx);
+  let power = Math.min(dist / (JRAD * 0.5), 1);
+  joy.x = Math.cos(ang) * power;
+  joy.y = Math.sin(ang) * power;
+  joyThumb.style.transform = `translate(-50%, -50%) translate(${Math.cos(ang)*cd}px, ${Math.sin(ang)*cd}px)`;
+}
+
+function resetJoy() {
+  joy.active = false; joy.pid = null; joy.x = 0; joy.y = 0;
+  joyThumb.style.transform = 'translate(-50%, -50%)';
+}
+
+joyBase.addEventListener('touchstart', e => {
+  e.preventDefault();
+  joy.active = true;
+  const t = e.changedTouches[0];
+  joy.pid = t.identifier;
+  const r = joyBase.getBoundingClientRect();
+  joy.ox = r.left + r.width / 2;
+  joy.oy = r.top + r.height / 2;
+  updateJoy(t.clientX, t.clientY);
+}, {passive: false});
+
+joyBase.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if(!joy.active) return;
+  for(let i=0; i<e.changedTouches.length; i++) {
+    if(e.changedTouches[i].identifier === joy.pid) {
+      updateJoy(e.changedTouches[i].clientX, e.changedTouches[i].clientY);
+      break;
+    }
+  }
+}, {passive: false});
+
+joyBase.addEventListener('touchend', e => {
+  for(let i=0; i<e.changedTouches.length; i++) {
+    if(e.changedTouches[i].identifier === joy.pid) resetJoy();
+  }
+});
+joyBase.addEventListener('touchcancel', e => { resetJoy(); });
+
+joyBase.addEventListener('mousedown', e => {
+  joy.active = true; joy.pid = 'mouse';
+  const r = joyBase.getBoundingClientRect();
+  joy.ox = r.left + r.width/2; joy.oy = r.top + r.height/2;
+  updateJoy(e.clientX, e.clientY);
+});
+window.addEventListener('mousemove', e => {
+  if(joy.active && joy.pid === 'mouse') updateJoy(e.clientX, e.clientY);
+});
+window.addEventListener('mouseup', e => {
+  if(joy.active && joy.pid === 'mouse') resetJoy();
+});
+
+// 🔥 ADVANCED FIX: NATIVE TOUCH EVENTS FOR CAMERA 🔥
+const camArea = document.getElementById('cam-area');
+camArea.addEventListener('touchstart', e => {
+  e.preventDefault();
+  camTouch.pid = e.changedTouches[0].identifier;
+  camTouch.lx = e.changedTouches[0].clientX;
+  camTouch.ly = e.changedTouches[0].clientY;
+}, {passive: false});
+
+camArea.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if(G.phase !== 'playing') return;
+  for(let i=0; i<e.changedTouches.length; i++) {
+    if(e.changedTouches[i].identifier === camTouch.pid) {
+      const t = e.changedTouches[i];
+      player.yaw -= (t.clientX - camTouch.lx) * 0.008;
+      player.pitch = Math.max(-0.6, Math.min(0.7, player.pitch + (t.clientY - camTouch.ly) * 0.008));
+      camTouch.lx = t.clientX; camTouch.ly = t.clientY;
+      break;
+    }
+  }
+}, {passive: false});
+
+const endCam = e => {
+  for(let i=0; i<e.changedTouches.length; i++) {
+    if(e.changedTouches[i].identifier === camTouch.pid) camTouch.pid = null;
+  }
+};
+camArea.addEventListener('touchend', endCam);
+camArea.addEventListener('touchcancel', endCam);
+
+// MOUSE EVENTS FOR CAMERA (PC fallback)
+let mouseDown=false, lastMX=0, lastMY=0;
 renderer.domElement.addEventListener('mousedown',e=>{mouseDown=true;lastMX=e.clientX;lastMY=e.clientY;});
 renderer.domElement.addEventListener('mousemove',e=>{if(!mouseDown||G.phase!=='playing')return;player.yaw-=(e.clientX-lastMX)*.008;player.pitch=Math.max(-.6,Math.min(.7,player.pitch+(e.clientY-lastMY)*.008));lastMX=e.clientX;lastMY=e.clientY;});
 renderer.domElement.addEventListener('mouseup',()=>mouseDown=false);
@@ -512,31 +599,17 @@ renderer.domElement.addEventListener('dblclick',()=>renderer.domElement.requestP
 document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement===renderer.domElement){document.addEventListener('mousemove',onLockMove);}else{document.removeEventListener('mousemove',onLockMove);}});
 function onLockMove(e){if(G.phase!=='playing')return;player.yaw-=e.movementX*.008;player.pitch=Math.max(-.6,Math.min(.7,player.pitch+e.movementY*.008));}
 
-const joy={x:0,y:0,active:false,pid:null,ox:0,oy:0};
-const camTouch={pid:null,lx:0,ly:0};
-const JRAD=52;
-
-document.getElementById('joy-base').addEventListener('pointerdown',e=>{e.currentTarget.setPointerCapture(e.pointerId);joy.active=true;joy.pid=e.pointerId;const r=document.getElementById('joy-base').getBoundingClientRect();joy.ox=r.left+r.width/2;joy.oy=r.top+r.height/2;});
-document.getElementById('joy-base').addEventListener('pointermove',e=>{
-  if(!joy.active||e.pointerId!==joy.pid)return;
-  const dx=e.clientX-joy.ox,dy=e.clientY-joy.oy,dist=Math.sqrt(dx*dx+dy*dy),cd=Math.min(dist,JRAD),ang=Math.atan2(dy,dx);
-  let power=Math.min(dist/(JRAD*0.5),1);
-  joy.x=Math.cos(ang)*power;
-  joy.y=Math.sin(ang)*power;
-  const th=document.getElementById('joy-thumb');
-  th.style.transform=`translate(calc(-50% + ${Math.cos(ang)*cd}px),calc(-50% + ${Math.sin(ang)*cd}px))`;
-});
-['pointerup','pointercancel'].forEach(ev=>document.getElementById('joy-base').addEventListener(ev,e=>{if(e.pointerId!==joy.pid)return;joy.active=false;joy.pid=null;joy.x=0;joy.y=0;document.getElementById('joy-thumb').style.transform='translate(-50%,-50%)';}));
-
-const camArea=document.getElementById('cam-area');
-camArea.addEventListener('pointerdown',e=>{e.currentTarget.setPointerCapture(e.pointerId);camTouch.pid=e.pointerId;camTouch.lx=e.clientX;camTouch.ly=e.clientY;});
-camArea.addEventListener('pointermove',e=>{if(e.pointerId!==camTouch.pid||G.phase!=='playing')return;player.yaw-=(e.clientX-camTouch.lx)*.008;player.pitch=Math.max(-.6,Math.min(.7,player.pitch+(e.clientY-camTouch.ly)*.008));camTouch.lx=e.clientX;camTouch.ly=e.clientY;});
-['pointerup','pointercancel'].forEach(ev=>camArea.addEventListener(ev,e=>{if(e.pointerId===camTouch.pid)camTouch.pid=null;}));
-
-document.getElementById('btn-jump').addEventListener('pointerdown',e=>{e.stopPropagation();doJump();});
-document.getElementById('btn-taunt').addEventListener('pointerdown',e=>{e.stopPropagation();doTaunt();});
-document.getElementById('btn-morph').addEventListener('pointerdown',e=>{e.stopPropagation();doTransform();});
-document.getElementById('btn-shoot').addEventListener('pointerdown',e=>{e.stopPropagation();doShoot();});
+// BUTTONS FIX
+function bindBtn(id, fn) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); fn(); }, {passive: false});
+  el.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); fn(); });
+}
+bindBtn('btn-jump', doJump);
+bindBtn('btn-taunt', doTaunt);
+bindBtn('btn-morph', doTransform);
+bindBtn('btn-shoot', doShoot);
 
 const jumpTrig={v:false};
 function doJump(){jumpTrig.v=true;}
@@ -575,7 +648,6 @@ function updateAISeekers(dt){
     const dir=new THREE.Vector3().subVectors(target,sk.pos);dir.y=0;const dl=dir.length();
     if(dl>0.1){dir.normalize();sk.pos.addScaledVector(dir,speed*dt);}
     
-    // RAYCASTER FIX AI KE LIYE
     sk.pos.y = getGroundY(sk.pos.x, sk.pos.z);
     
     sk.pos.x=Math.max(-MAP_HALF,Math.min(MAP_HALF,sk.pos.x));sk.pos.z=Math.max(-MAP_HALF,Math.min(MAP_HALF,sk.pos.z));
@@ -591,7 +663,6 @@ function updateAISeekers(dt){
 function updateAIHiders(dt){
   if(G.role!=='seeker')return;
   aiHiders.forEach(h=>{if(!h.alive)return;h.moveCd-=dt;if(h.moveCd<=0){h.moveCd=2+Math.random()*3;h.moveDir.set(Math.random()-.5,0,Math.random()-.5).normalize();}h.pos.addScaledVector(h.moveDir,1.5*dt);h.pos.x=Math.max(-MAP_HALF,Math.min(MAP_HALF,h.pos.x));h.pos.z=Math.max(-MAP_HALF,Math.min(MAP_HALF,h.pos.z));
-    // RAYCASTER FIX AI HIDERS KE LIYE
     h.pos.y = getGroundY(h.pos.x, h.pos.z);
     h.mesh.position.copy(h.pos);
   });
@@ -633,7 +704,6 @@ function updateHUD(){
   document.getElementById('btn-morph').style.display=G.role==='hider'?'flex':'none';
   document.getElementById('seeker-btns').style.display=G.role==='seeker'?'flex':'none';
   document.getElementById('transform-label').style.display=G.isTransformed?'block':'none';
-  document.getElementById('kbd-hint').innerHTML=G.role==='hider'?'WASD=Move | Mouse=Camera<br>Space=Jump | E=Morph | T=Taunt':'WASD=Move | Mouse/Drag=Camera<br>Space=Jump | F/Click=Shoot';
 }
 
 function showMsg(txt, dur=1800) {
@@ -648,7 +718,7 @@ function startGame() {
   G.score=0; G.kills=0; G.survivalTime=0;
   G.isTransformed=false; G.currentPropType=null; G.nearbyPropId=null;
   G.caughtFlash=false; G.tauntActive=false;
-  player.pos.set(0,1,0); player.vel.set(0,0,0);
+  player.pos.set(0,5,0); player.vel.set(0,0,0);
   player.yaw=0; player.pitch=.22; player.shootCooldown=0;
   bullets.forEach(b => scene.remove(b.mesh)); bullets.length=0;
   revertTransform();
@@ -780,7 +850,6 @@ function gameLoop() {
     player.pos.z += player.vel.z * dt;
     player.pos.y += player.vel.y * dt;
 
-    // 🔥 RAYCASTER COLLISION APPLIED 🔥
     const gy = getGroundY(player.pos.x, player.pos.z);
     if(player.pos.y <= gy) {
       player.pos.y   = gy;
@@ -790,8 +859,8 @@ function gameLoop() {
       player.onGround = false;
     }
 
-    player.pos.x = Math.max(-MAP_HALF, Math.min(MAP_HALF, player.pos.x));
-    player.pos.z = Math.max(-MAP_HALF, Math.min(MAP_HALF, player.pos.z));
+    player.pos.x = Math.max(-MAP_HALF*2, Math.min(MAP_HALF*2, player.pos.x));
+    player.pos.z = Math.max(-MAP_HALF*2, Math.min(MAP_HALF*2, player.pos.z));
 
     if(playerMesh) {
       playerMesh.position.copy(player.pos);
