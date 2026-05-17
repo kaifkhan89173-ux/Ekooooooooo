@@ -234,7 +234,6 @@ scene.add(dL2);
 
 const MAP_HALF=30, WALL_H=4.5, GRAV=-18, PLAYER_SPEED=6, PROP_SPEED=2.8, JUMP_VEL=8;
 
-// Map ekdum flat ho gaya hai, isliye height humesha 0 rahegi
 function getGroundY(x, z) { return 0; }
 
 function box(w,h,d,color,opts={}){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color,...opts}));}
@@ -296,7 +295,6 @@ function loadCustomMap(){
   loader.load(modelUrl, function (gltf) {
     customMapModel = gltf.scene;
     
-    // Y-SCALE KO 0.01 KAR DIYA HAI TAAKI MAP EKDUM FLAT (FARSH JAISA) BAN JAYE
     customMapModel.scale.set(6, 0.01, 6); 
     customMapModel.position.set(0, 0, 0);
     customMapModel.traverse((node) => {
@@ -336,6 +334,46 @@ function loadTrees(){
     });
   });
 }
+
+// ─── ROCK LOADING LOGIC ───
+let rockModel = null;
+function loadRocks(){
+  const loader = new GLTFLoader();
+  const rockUrl = 'stone_rockpart6.glb';
+
+  loader.load(rockUrl, function (gltf) {
+    rockModel = gltf.scene;
+    rockModel.traverse((node) => {
+      if (node.isMesh) {
+        node.castShadow = true;
+        node.receiveShadow = true;
+      }
+    });
+
+    // 6 Alag alag jagah rocks spawn karne ka array
+    const rockPositions = [ 
+      [12, 0, -12], [-18, 0, 18], [22, 0, 22], [-25, 0, -10], 
+      [8, 0, 26], [-8, 0, -22] 
+    ];
+    
+    // Agar rock size me bahot bada/chota hoto 'baseScale' ki value adjust kar lena
+    const baseScale = 1.0; 
+
+    rockPositions.forEach(pos => {
+      const rockClone = rockModel.clone();
+      
+      // Har rock ko thoda random size aur rotation diya gaya hai taaki natural lage
+      const finalScale = baseScale * (0.8 + Math.random() * 0.4); 
+      rockClone.scale.set(finalScale, finalScale, finalScale); 
+      
+      rockClone.position.set(pos[0], pos[1], pos[2]);
+      rockClone.rotation.y = Math.random() * Math.PI * 2; 
+      
+      scene.add(rockClone);
+    });
+  });
+}
+
 
 const PROP_DEFS=[
   {id:'p1',type:'crate',pos:[-15,0,-10],col:0x8B6914,sx:1,sy:1,sz:1},
@@ -635,7 +673,7 @@ function updateAISeekers(dt){
     const dir=new THREE.Vector3().subVectors(target,sk.pos);dir.y=0;const dl=dir.length();
     if(dl>0.1){dir.normalize();sk.pos.addScaledVector(dir,speed*dt);}
     
-    sk.pos.y = 0; // Flat ground fix
+    sk.pos.y = 0; 
     
     sk.pos.x=Math.max(-MAP_HALF,Math.min(MAP_HALF,sk.pos.x));sk.pos.z=Math.max(-MAP_HALF,Math.min(MAP_HALF,sk.pos.z));
     sk.mesh.position.copy(sk.pos);
@@ -650,7 +688,7 @@ function updateAISeekers(dt){
 function updateAIHiders(dt){
   if(G.role!=='seeker')return;
   aiHiders.forEach(h=>{if(!h.alive)return;h.moveCd-=dt;if(h.moveCd<=0){h.moveCd=2+Math.random()*3;h.moveDir.set(Math.random()-.5,0,Math.random()-.5).normalize();}h.pos.addScaledVector(h.moveDir,1.5*dt);h.pos.x=Math.max(-MAP_HALF,Math.min(MAP_HALF,h.pos.x));h.pos.z=Math.max(-MAP_HALF,Math.min(MAP_HALF,h.pos.z));
-    h.pos.y = 0; // Flat ground fix
+    h.pos.y = 0; 
     h.mesh.position.copy(h.pos);
   });
 }
@@ -896,6 +934,7 @@ function gameLoop() {
 
 loadCustomMap();
 loadTrees();  
+loadRocks(); // HEY KASHIF: YEHA ROCK WALA FUNCTION CALL HO RAHA HAI
 loadCharacterModel(); 
 buildProps();
 gameLoop();
