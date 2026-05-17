@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Prop Hunt 3D — Flat Ground & Smooth Joystick</title>
+<title>Prop Hunt 3D — BGMI Aim</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none;touch-action:none;}
@@ -54,10 +54,10 @@ canvas{display:block;touch-action:none;}
 #score-box span{display:block;font-size:22px;font-weight:bold;color:#ff6b35;}
 #hiders-left{position:absolute;top:80px;right:14px;background:rgba(0,0,0,.7);border:2px solid #ff6b35;border-radius:12px;padding:8px 14px;color:#fff;font-size:13px;text-align:center;}
 #hiders-left span{display:block;font-size:22px;font-weight:bold;color:#ff6b35;}
-#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;}
-#crosshair::before,#crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.85);}
-#crosshair::before{width:2px;height:100%;left:50%;transform:translateX(-50%);}
-#crosshair::after{width:100%;height:2px;top:50%;transform:translateY(-50%);}
+/* 🔥 BGMI CROSSHAIR CSS 🔥 */
+#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;z-index:100;}
+#crosshair::before{content:'';position:absolute;width:5px;height:5px;background:rgba(255,255,255,1);border:1.5px solid #000;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);}
+#crosshair::after{display:none;}
 #morph-hint{position:absolute;bottom:252px;left:50%;transform:translateX(-50%);background:rgba(78,205,196,.92);border-radius:20px;padding:8px 20px;color:#fff;font-size:14px;font-weight:bold;animation:bob 1s infinite;white-space:nowrap;}
 @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
 #alert-seeker{position:absolute;top:148px;left:14px;background:rgba(255,0,0,.82);border-radius:10px;padding:5px 12px;color:#fff;font-size:13px;font-weight:bold;animation:pulse .5s infinite alternate;}
@@ -70,7 +70,8 @@ canvas{display:block;touch-action:none;}
 #joy-area{position:absolute;bottom:28px;left:26px;width:128px;height:128px;pointer-events:all;touch-action:none;}
 .joy-base{width:128px;height:128px;border-radius:50%;background:rgba(255,255,255,.1);border:3px solid rgba(255,255,255,.32);position:relative;touch-action:none;}
 .joy-thumb{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.48);border:2px solid rgba(255,255,255,.8);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;}
-#btns{position:absolute;bottom:28px;right:18px;display:flex;flex-direction:column;gap:10px;pointer-events:all;align-items:flex-end;touch-action:none;}
+/* 🔥 UI Fix for Buttons and Camera Area 🔥 */
+#btns{position:absolute;bottom:28px;right:18px;display:flex;flex-direction:column;gap:10px;pointer-events:all;align-items:flex-end;touch-action:none;z-index:35;}
 .btn-row{display:flex;gap:10px;align-items:center;}
 .abtn{width:62px;height:62px;border-radius:50%;border:3px solid;font-size:10px;font-weight:bold;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1.2;text-align:center;touch-action:none;transition:transform .1s,opacity .1s;}
 .abtn:active{transform:scale(.88);opacity:.75;}
@@ -81,7 +82,8 @@ canvas{display:block;touch-action:none;}
 .abtn-morph.dim{opacity:.38;}
 .abtn-shoot{background:rgba(255,68,68,.25);border-color:#ff4444;width:70px;height:70px;font-size:11px;}
 .abtn-shoot:active{background:rgba(255,68,68,.7);box-shadow:0 0 18px #ff4444;}
-#cam-area{position:fixed;top:0;right:0;width:55%;height:calc(100vh - 220px);pointer-events:all;z-index:25;touch-action:none;}
+/* 🔥 BGMI RIGHT-HALF TOUCH AREA 🔥 */
+#cam-area{position:fixed;top:0;right:0;width:50%;height:100vh;pointer-events:all;z-index:25;touch-action:none;}
 @keyframes tauntRipple{0%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-50%) scale(5);}}
 </style>
 </head>
@@ -350,25 +352,19 @@ function loadRocks(){
       }
     });
 
-    // 6 Alag alag jagah rocks spawn karne ka array
     const rockPositions = [ 
       [12, 0, -12], [-18, 0, 18], [22, 0, 22], [-25, 0, -10], 
       [8, 0, 26], [-8, 0, -22] 
     ];
     
-    // Agar rock size me bahot bada/chota hoto 'baseScale' ki value adjust kar lena
     const baseScale = 1.0; 
 
     rockPositions.forEach(pos => {
       const rockClone = rockModel.clone();
-      
-      // Har rock ko thoda random size aur rotation diya gaya hai taaki natural lage
       const finalScale = baseScale * (0.8 + Math.random() * 0.4); 
       rockClone.scale.set(finalScale, finalScale, finalScale); 
-      
       rockClone.position.set(pos[0], pos[1], pos[2]);
       rockClone.rotation.y = Math.random() * Math.PI * 2; 
-      
       scene.add(rockClone);
     });
   });
@@ -511,10 +507,17 @@ function buildAIHiders(){
 const bullets=[];
 const bulletGeo=new THREE.SphereGeometry(.08,6,6);
 const bulletMat=new THREE.MeshBasicMaterial({color:0xffff00});
+
+// 🔥 BGMI AIM SHOOTING LOGIC 🔥
 function spawnBullet(){
-  const dir=new THREE.Vector3(-Math.sin(player.yaw)*Math.cos(player.pitch),-Math.sin(player.pitch),-Math.cos(player.yaw)*Math.cos(player.pitch)).normalize();
-  const mesh=new THREE.Mesh(bulletGeo,bulletMat);mesh.position.copy(player.pos).y+=0.8;scene.add(mesh);
-  bullets.push({mesh,dir,life:1.5});
+  // Goli ab player se nahi, camera ke center (crosshair) se exact wahi niklegi jahan aim hai
+  const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+  const mesh = new THREE.Mesh(bulletGeo, bulletMat);
+  
+  // Camera ke thoda aage se goli shuru hogi taaki character ke andarr na atak jaye
+  mesh.position.copy(camera.position).addScaledVector(dir, 1.0);
+  scene.add(mesh);
+  bullets.push({mesh, dir, life:1.5});
 }
 
 const keys={};
@@ -594,14 +597,15 @@ camArea.addEventListener('touchstart', e => {
   camTouch.ly = e.changedTouches[0].clientY;
 }, {passive: false});
 
+// 🔥 INCREASED PITCH LIMIT (-1.2 TO 1.2) SO YOU CAN LOOK UP AND DOWN LIKE BGMI 🔥
 camArea.addEventListener('touchmove', e => {
   e.preventDefault();
   if(G.phase !== 'playing') return;
   for(let i=0; i<e.changedTouches.length; i++) {
     if(e.changedTouches[i].identifier === camTouch.pid) {
       const t = e.changedTouches[i];
-      player.yaw -= (t.clientX - camTouch.lx) * 0.008;
-      player.pitch = Math.max(-0.6, Math.min(0.7, player.pitch + (t.clientY - camTouch.ly) * 0.008));
+      player.yaw -= (t.clientX - camTouch.lx) * 0.005; // Slightly smoother sensitivity
+      player.pitch = Math.max(-1.2, Math.min(1.2, player.pitch + (t.clientY - camTouch.ly) * 0.005));
       camTouch.lx = t.clientX; camTouch.ly = t.clientY;
       break;
     }
@@ -618,12 +622,12 @@ camArea.addEventListener('touchcancel', endCam);
 
 let mouseDown=false, lastMX=0, lastMY=0;
 renderer.domElement.addEventListener('mousedown',e=>{mouseDown=true;lastMX=e.clientX;lastMY=e.clientY;});
-renderer.domElement.addEventListener('mousemove',e=>{if(!mouseDown||G.phase!=='playing')return;player.yaw-=(e.clientX-lastMX)*.008;player.pitch=Math.max(-.6,Math.min(.7,player.pitch+(e.clientY-lastMY)*.008));lastMX=e.clientX;lastMY=e.clientY;});
+renderer.domElement.addEventListener('mousemove',e=>{if(!mouseDown||G.phase!=='playing')return;player.yaw-=(e.clientX-lastMX)*.005;player.pitch=Math.max(-1.2,Math.min(1.2,player.pitch+(e.clientY-lastMY)*.005));lastMX=e.clientX;lastMY=e.clientY;});
 renderer.domElement.addEventListener('mouseup',()=>mouseDown=false);
 renderer.domElement.addEventListener('click',()=>{if(G.role==='seeker'&&G.phase==='playing')doShoot();});
 renderer.domElement.addEventListener('dblclick',()=>renderer.domElement.requestPointerLock());
 document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement===renderer.domElement){document.addEventListener('mousemove',onLockMove);}else{document.removeEventListener('mousemove',onLockMove);}});
-function onLockMove(e){if(G.phase!=='playing')return;player.yaw-=e.movementX*.008;player.pitch=Math.max(-.6,Math.min(.7,player.pitch+e.movementY*.008));}
+function onLockMove(e){if(G.phase!=='playing')return;player.yaw-=e.movementX*.005;player.pitch=Math.max(-1.2,Math.min(1.2,player.pitch+e.movementY*.005));}
 
 function bindBtn(id, fn) {
   const el = document.getElementById(id);
@@ -824,16 +828,6 @@ function endGame() {
   document.getElementById('go-tip').textContent = tips[Math.floor(Math.random()*tips.length)];
 }
 
-function showMenu() {
-  G.phase = 'menu';
-  document.getElementById('hud').style.display='none';
-  document.getElementById('controls').style.display='none';
-  document.getElementById('screen').style.display='flex';
-  document.getElementById('menu').style.display='flex';
-  document.getElementById('gameover').style.display='none';
-  selectRole(G.role);
-}
-
 const _fwd   = new THREE.Vector3();
 const _right = new THREE.Vector3();
 let lastTime = performance.now();
@@ -875,7 +869,6 @@ function gameLoop() {
     player.pos.z += player.vel.z * dt;
     player.pos.y += player.vel.y * dt;
 
-    // 🔥 FLAT GROUND FIX 🔥
     if(player.pos.y <= 0) {
       player.pos.y   = 0;
       player.vel.y   = 0;
@@ -887,10 +880,10 @@ function gameLoop() {
     player.pos.x = Math.max(-MAP_HALF*2, Math.min(MAP_HALF*2, player.pos.x));
     player.pos.z = Math.max(-MAP_HALF*2, Math.min(MAP_HALF*2, player.pos.z));
 
+    // 🔥 CHARACTER AB HAMESHA CROSSHAIR WALI DIRECTION ME FACE KAREGA 🔥
     if(playerMesh) {
       playerMesh.position.copy(player.pos);
-      if(Math.abs(mx) > .01 || Math.abs(mz) > .01)
-        playerMesh.rotation.y = player.yaw;
+      playerMesh.rotation.y = player.yaw; 
     }
     
     if (playerMixer) {
@@ -914,13 +907,27 @@ function gameLoop() {
 
     player.shootCooldown = Math.max(0, player.shootCooldown - dt);
 
-    const camDist = 5.2, camH = 2.8; 
-    const cx = player.pos.x + Math.sin(player.yaw) * camDist;
-    const cz = player.pos.z + Math.cos(player.yaw) * camDist;
-    const cy = player.pos.y + camH + Math.sin(player.pitch) * camDist * .5;
+    // 🔥 BGMI OVER-THE-SHOULDER CAMERA LOGIC 🔥
+    const camDist = 3.5;         // Character se kitna piche
+    const camHeightOffset = 1.8; // Zameen se kitna upar
+    const camRightOffset = 1.0;  // Kandhe ke kitna right me
+
+    const fwd = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
+    const right = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
     
-    camera.position.lerp(new THREE.Vector3(cx, cy, cz), 0.45);
-    camera.lookAt(player.pos.x, player.pos.y + 1.5, player.pos.z);
+    const pitchAxis = right.clone();
+    const aimFwd = fwd.clone().applyAxisAngle(pitchAxis, player.pitch);
+
+    const targetCamPos = player.pos.clone()
+        .add(new THREE.Vector3(0, camHeightOffset, 0))
+        .add(right.clone().multiplyScalar(camRightOffset))
+        .add(aimFwd.clone().multiplyScalar(-camDist));
+
+    camera.position.lerp(targetCamPos, 0.45);
+    
+    const lookAtTarget = camera.position.clone().add(aimFwd);
+    camera.lookAt(lookAtTarget);
+    // ---------------------------------------------
 
     updateAISeekers(dt);
     updateAIHiders(dt);
@@ -934,7 +941,7 @@ function gameLoop() {
 
 loadCustomMap();
 loadTrees();  
-loadRocks(); // HEY KASHIF: YEHA ROCK WALA FUNCTION CALL HO RAHA HAI
+loadRocks();
 loadCharacterModel(); 
 buildProps();
 gameLoop();
