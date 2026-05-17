@@ -207,11 +207,14 @@ function selectRole(r){
   else{grid.innerHTML=`<span>⬆️ WASD / Arrows</span><span>Move</span><span>📷 Right Swipe / Mouse</span><span>Camera</span><span>⬛ Space / Jump btn</span><span>Jump</span><span>🎭 E / Morph btn</span><span>Transform</span><span>📣 T / Taunt btn</span><span>Taunt (+coins!)</span>`;}
 }
 
-const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});
+// ── YAHAN RENDERER AUR LIGHTING KO REALISTIC BANA DIYA HAI ──
+const renderer=new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'}); 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
 renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.BasicShadowMap;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap; // HD soft shadows
+renderer.outputColorSpace = THREE.SRGBColorSpace; // Real vibrant colors
+
 document.body.insertBefore(renderer.domElement,document.body.firstChild);
 
 const scene=new THREE.Scene();
@@ -221,9 +224,15 @@ const camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight
 camera.position.set(0,5,8);
 window.addEventListener('resize',()=>{renderer.setSize(window.innerWidth,window.innerHeight);camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();});
 
-scene.add(new THREE.AmbientLight(0xffffff,0.8));
-const dL=new THREE.DirectionalLight(0xffffff,1.2);dL.position.set(5,12,5);dL.castShadow=true;dL.shadow.mapSize.set(512,512);scene.add(dL);
-const dL2=new THREE.DirectionalLight(0xffffff,0.4);dL2.position.set(-8,8,-8);scene.add(dL2);
+scene.add(new THREE.AmbientLight(0xffffff, 1.2)); // Brightness badhai
+const dL=new THREE.DirectionalLight(0xffffff, 1.5); // Sun light badhai
+dL.position.set(10, 20, 10);
+dL.castShadow=true;
+dL.shadow.mapSize.set(2048, 2048); // High quality shadows
+scene.add(dL);
+const dL2=new THREE.DirectionalLight(0xffffff, 0.5);
+dL2.position.set(-8,8,-8);
+scene.add(dL2);
 
 const MAP_HALF=19,WALL_H=4.5,GRAV=-18,PLAYER_SPEED=6,PROP_SPEED=2.8,JUMP_VEL=8;
 
@@ -263,16 +272,15 @@ function loadCustomMap(){
   });
 }
 
-// ─── NEW TREE LOADING LOGIC ───
+// ─── NEW TREE LOADING LOGIC (Size adjusted) ───
 let treeModel = null;
 function loadTrees(){
   const loader = new GLTFLoader();
-  const treeUrl = 'psx_birch_tree.glb'; // Tumhara upload kiya gaya ped
+  const treeUrl = 'psx_birch_tree.glb';
 
   loader.load(treeUrl, function (gltf) {
     treeModel = gltf.scene;
     
-    // Shadows on kar rahe hain
     treeModel.traverse((node) => {
       if (node.isMesh) {
         node.castShadow = true;
@@ -280,8 +288,6 @@ function loadTrees(){
       }
     });
 
-    // Hum 5 ped alag-alag jagah par laga rahe hain (x, y, z)
-    // Map ke hisaab se height (y) adjust kar lena agar ped hawa mein uden
     const treePositions = [
       [5, 0, 5],
       [-8, 0, 12],
@@ -292,7 +298,8 @@ function loadTrees(){
 
     treePositions.forEach(pos => {
       const treeClone = treeModel.clone();
-      treeClone.scale.set(1, 1, 1); // Yahan scale badal kar ped ko bada/chota kar sakte ho (e.g. 2, 2, 2)
+      // YAHAN SCALE KO 1 SE 0.002 KAR DIYA HAI TAAKI PED GIANT NA LAGE!
+      treeClone.scale.set(0.002, 0.002, 0.002); 
       treeClone.position.set(pos[0], pos[1], pos[2]);
       scene.add(treeClone);
     });
@@ -765,9 +772,8 @@ function gameLoop() {
   renderer.render(scene, camera);
 }
 
-// ── MAP AUR TREES LOAD KIYE AUR GAME START KIYA ──
 loadCustomMap();
-loadTrees();  // Naya function yahan call ho raha hai
+loadTrees();  
 buildProps();
 gameLoop();
 
