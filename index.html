@@ -356,20 +356,58 @@ function loadRocks(){
       [8, 0, 26], [-8, 0, -22] 
     ];
     
-    // Agar rock size me bahot bada/chota hoto 'baseScale' ki value adjust kar lena
     const baseScale = 1.0; 
 
     rockPositions.forEach(pos => {
       const rockClone = rockModel.clone();
-      
-      // Har rock ko thoda random size aur rotation diya gaya hai taaki natural lage
       const finalScale = baseScale * (0.8 + Math.random() * 0.4); 
       rockClone.scale.set(finalScale, finalScale, finalScale); 
-      
       rockClone.position.set(pos[0], pos[1], pos[2]);
       rockClone.rotation.y = Math.random() * Math.PI * 2; 
-      
       scene.add(rockClone);
+    });
+  });
+}
+
+// ─── NEW EXTRA MODEL LOGIC (Sloped Dirt Path) ───
+let extraModel = null;
+function loadExtraModel(){
+  const loader = new GLTFLoader();
+  
+  // Yahan maine tumhara model naam 'Sloped_dirt_path.glb' dal diya hai
+  const modelUrl = 'Sloped_dirt_path.glb'; 
+
+  loader.load(modelUrl, function (gltf) {
+    extraModel = gltf.scene;
+    
+    extraModel.traverse((node) => {
+      if (node.isMesh) {
+        node.castShadow = true;
+        node.receiveShadow = true;
+      }
+    });
+
+    // Map ko aur accha dikhane ke liye Sloped dirt path ki 3 positions:
+    const modelPositions = [ 
+      [0, 0, 0],      // Center me
+      [-15, 0, 15],   // Map ke ek taraf
+      [18, 0, -18]    // Map ke dusri taraf
+    ];
+    
+    // Agar path zameen ke andar dhas raha ho ya bahut bada/chota ho, toh ise adjust karna
+    const baseScale = 1.0; 
+
+    modelPositions.forEach((pos, index) => {
+      const modelClone = extraModel.clone();
+      
+      modelClone.scale.set(baseScale, baseScale, baseScale); 
+      // Zameen par theek se dikhe isliye thoda 'y' adjust kiya hai (zaroorat pade toh pos[1] badal lena)
+      modelClone.position.set(pos[0], pos[1] + 0.1, pos[2]); 
+      
+      // Har path thoda alag direction me point karega
+      modelClone.rotation.y = (Math.PI / 2) * index; 
+      
+      scene.add(modelClone);
     });
   });
 }
@@ -875,7 +913,6 @@ function gameLoop() {
     player.pos.z += player.vel.z * dt;
     player.pos.y += player.vel.y * dt;
 
-    // 🔥 FLAT GROUND FIX 🔥
     if(player.pos.y <= 0) {
       player.pos.y   = 0;
       player.vel.y   = 0;
@@ -934,7 +971,8 @@ function gameLoop() {
 
 loadCustomMap();
 loadTrees();  
-loadRocks(); // HEY KASHIF: YEHA ROCK WALA FUNCTION CALL HO RAHA HAI
+loadRocks(); 
+loadExtraModel(); 
 loadCharacterModel(); 
 buildProps();
 gameLoop();
