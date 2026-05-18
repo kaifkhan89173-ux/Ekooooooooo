@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Prop Hunt 3D — Mechanic Girl & BGMI Aim</title>
+<title>Prop Hunt 3D — Mechanic Girl & Fixed Camera</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none;touch-action:none;}
@@ -268,12 +268,10 @@ let currentAction = null;
 function loadCharacterModel() {
   const loader = new GLTFLoader();
   
-  // Nayi Mechanic Girl Model ka path
   loader.load('girl_mechanic.glb', function (gltf) { 
     basePlayerModel = gltf.scene;
     playerAnimations = gltf.animations;
 
-    // Scale ko zaroorat ke hisaab se adjust kar lena
     basePlayerModel.scale.set(0.015, 0.015, 0.015);
     basePlayerModel.position.y = 0; 
     basePlayerModel.rotation.y = Math.PI; 
@@ -286,16 +284,12 @@ function loadCharacterModel() {
     });
 
     if (playerMesh && !G.isTransformed) {
-      // Purane saare parts ko hata do
       while(playerMesh.children.length > 0){ 
           playerMesh.remove(playerMesh.children[0]); 
       }
-      
-      // Naya model add karo
       playerMesh.add(basePlayerModel);
       setupAnimations();
       
-      // Agar seeker hai toh red dot wapas add karo
       if(G.role === 'seeker'){
           const ind = sph(0.2, 0xff0000, {emissive: 0xff0000});
           ind.position.y = 1.6;
@@ -485,7 +479,6 @@ function buildProps(){PROP_DEFS.forEach(def=>{const g=makePropMesh(def);g.positi
 const player={pos:new THREE.Vector3(0,0,0),vel:new THREE.Vector3(),onGround:false,yaw:0,pitch:.22,shootCooldown:0,mesh:null};
 let playerMesh=null,transformedMesh=null,transformedDot=null;
 
-// 🔥 NO FALLBACK BOX, ONLY MECHANIC GIRL 🔥
 function buildPlayerMesh(role){
   if(playerMesh) scene.remove(playerMesh);
   
@@ -967,25 +960,37 @@ function gameLoop() {
 
     player.shootCooldown = Math.max(0, player.shootCooldown - dt);
 
-    // 🔥 BGMI OVER-THE-SHOULDER CAMERA 🔥
+    // 🔥 BGMI OVER-THE-SHOULDER CAMERA (FIXED) 🔥
     const camDist = 3.5;         
-    const camHeightOffset = 1.8; 
+    const camHeightOffset = 1.6; // Mechanic girl ki height ke hisaab se adjust kiya hai
     const camRightOffset = 1.0;  
 
-    const fwd = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
+    // 1. Character ke kandhe (shoulder) ki position nikalo
+    const shoulderPos = player.pos.clone().add(new THREE.Vector3(0, camHeightOffset, 0));
     const right = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
-    
-    const pitchAxis = right.clone();
-    const aimFwd = fwd.clone().applyAxisAngle(pitchAxis, player.pitch);
+    shoulderPos.add(right.multiplyScalar(camRightOffset));
 
-    const targetCamPos = player.pos.clone()
-        .add(new THREE.Vector3(0, camHeightOffset, 0))
-        .add(right.clone().multiplyScalar(camRightOffset))
-        .add(aimFwd.clone().multiplyScalar(-camDist));
+    // 2. Camera ko orbit math ke hisaab se set karo
+    const hDist = Math.cos(player.pitch) * camDist;
+    const vDist = Math.sin(player.pitch) * camDist;
 
+    const targetCamPos = new THREE.Vector3(
+        shoulderPos.x + Math.sin(player.yaw) * hDist,
+        shoulderPos.y - vDist, // Jab upar dekhenge, camera niche aayega
+        shoulderPos.z + Math.cos(player.yaw) * hDist
+    );
+
+    // 💥 BUG FIX: Camera ko zameen ke niche jaane se roko! (Ground Collision)
+    targetCamPos.y = Math.max(0.5, targetCamPos.y); // 0.5 meter se niche nahi jayega
+
+    // Smooth camera movement
     camera.position.lerp(targetCamPos, 0.45);
     
-    const lookAtTarget = camera.position.clone().add(aimFwd);
+    // 3. Camera hamesha crosshair ki taraf aim karega
+    const lookDir = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
+    lookDir.applyAxisAngle(right, player.pitch); 
+    
+    const lookAtTarget = camera.position.clone().add(lookDir);
     camera.lookAt(lookAtTarget);
 
     updateAISeekers(dt);
