@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Prop Hunt 3D — Mechanic Girl (Fixed Scale)</title>
+<title>Prop Hunt 3D — Mechanic Girl & Fixed Loading</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none;touch-action:none;}
@@ -215,225 +215,7 @@ canvas{display:block;touch-action:none;}
   {
     "imports": {
       "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
-      "three/addons```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Prop Hunt 3D — Mechanic Girl (Fixed Scale)</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none;touch-action:none;}
-canvas{display:block;touch-action:none;}
-#screen{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;}
-#menu{background:radial-gradient(ellipse at center,#1a0a2e 0%,#0d0a1a 65%,#000 100%);width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;overflow-y:auto;}
-#menu h1{font-size:clamp(38px,8vw,74px);font-weight:900;color:#fff;letter-spacing:3px;text-shadow:0 0 30px #ff6b35,0 0 60px #ff6b35;margin-bottom:6px;}
-.subtitle{font-size:clamp(12px,3vw,18px);color:#4ecdc4;letter-spacing:5px;text-transform:uppercase;margin-bottom:28px;}
-.desc{color:rgba(255,255,255,.55);font-size:14px;line-height:1.8;margin-bottom:28px;max-width:420px;}
-.role-row{display:flex;gap:18px;margin-bottom:28px;flex-wrap:wrap;justify-content:center;}
-.role-card{background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.18);border-radius:16px;padding:22px 28px;cursor:pointer;transition:all .3s;min-width:155px;color:#fff;}
-.role-card:hover{transform:scale(1.05);}
-.role-card.sel-hider{border-color:#4ecdc4;background:rgba(78,205,196,.18);box-shadow:0 0 28px rgba(78,205,196,.35);}
-.role-card.sel-seeker{border-color:#ff6b35;background:rgba(255,107,53,.18);box-shadow:0 0 28px rgba(255,107,53,.35);}
-.role-icon{font-size:44px;margin-bottom:10px;}
-.role-name{font-size:20px;font-weight:bold;margin-bottom:6px;}
-.role-desc{font-size:12px;color:rgba(255,255,255,.55);line-height:1.6;}
-.ctrl-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 24px;margin-bottom:28px;color:rgba(255,255,255,.65);font-size:13px;max-width:500px;width:100%;}
-.ctrl-box .title{color:#ffd700;font-weight:bold;margin-bottom:8px;}
-.ctrl-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;text-align:left;}
-.btn-start{background:linear-gradient(135deg,#ff6b35,#ff4444);border:none;border-radius:50px;padding:16px 56px;font-size:20px;font-weight:bold;color:#fff;cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:all .3s;box-shadow:0 8px 28px rgba(255,107,53,.5);}
-.btn-start:hover{transform:scale(1.06);box-shadow:0 12px 38px rgba(255,107,53,.7);}
-.btn-start:disabled{background:#555;cursor:not-allowed;transform:none;box-shadow:none;color:#aaa;}
-.vs-note{margin-top:16px;color:rgba(255,255,255,.28);font-size:12px;}
-#gameover{background:rgba(0,0,0,.93);width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;padding:20px;text-align:center;}
-.go-emoji{font-size:clamp(48px,10vw,88px);}
-.go-title{font-size:clamp(26px,6vw,56px);font-weight:900;margin-bottom:20px;text-shadow:0 0 24px currentColor;}
-.go-title.win{color:#4ecdc4;}.go-title.lose{color:#ff4444;}
-.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px;max-width:380px;width:100%;}
-.stat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px;}
-.stat-lbl{font-size:11px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
-.stat-val{font-size:28px;font-weight:bold;color:#ffd700;}
-.tip{background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.3);border-radius:10px;padding:10px 20px;font-size:13px;color:rgba(255,255,255,.75);margin-bottom:22px;max-width:420px;}
-.reward{font-size:18px;color:#ffd700;font-weight:bold;margin-bottom:24px;}
-.go-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
-.btn-again{background:linear-gradient(135deg,#4ecdc4,#44a08d);border:none;border-radius:50px;padding:14px 40px;font-size:17px;font-weight:bold;color:#fff;cursor:pointer;transition:all .3s;box-shadow:0 6px 24px rgba(78,205,196,.38);text-transform:uppercase;}
-.btn-again:hover{transform:scale(1.06);}
-.btn-menu{background:linear-gradient(135deg,#444,#222);border:none;border-radius:50px;padding:14px 40px;font-size:17px;font-weight:bold;color:#fff;cursor:pointer;transition:all .3s;text-transform:uppercase;}
-#hud{position:fixed;inset:0;pointer-events:none;z-index:20;}
-#hud-top{display:flex;justify-content:space-between;align-items:flex-start;padding:14px;}
-.hud-badge{background:rgba(0,0,0,.72);border-radius:12px;padding:8px 14px;border:2px solid #4ecdc4;color:#4ecdc4;text-align:center;font-size:13px;font-weight:bold;}
-.hud-badge.seeker{border-color:#ff6b35;color:#ff6b35;}
-.hud-timer{background:rgba(0,0,0,.72);border:2px solid #ff6b35;border-radius:12px;padding:8px 20px;color:#fff;font-size:28px;font-weight:bold;text-shadow:0 0 10px #ff6b35;min-width:80px;text-align:center;}
-.hud-timer.urgent{border-color:#ff0000;color:#ff4444;animation:pulse .5s infinite alternate;}
-@keyframes pulse{from{transform:scale(1)}to{transform:scale(1.08)}}
-.hud-coins{background:rgba(0,0,0,.72);border:2px solid #ffd700;border-radius:12px;padding:8px 14px;color:#ffd700;font-size:18px;font-weight:bold;}
-#hearts{position:absolute;top:80px;left:14px;background:rgba(0,0,0,.7);border:2px solid #ff4444;border-radius:12px;padding:8px 12px;font-size:20px;display:flex;gap:3px;}
-#score-box{position:absolute;top:80px;right:14px;background:rgba(0,0,0,.7);border:2px solid #ff6b35;border-radius:12px;padding:8px 14px;color:#fff;font-size:14px;text-align:center;}
-#score-box span{display:block;font-size:22px;font-weight:bold;color:#ff6b35;}
-#hiders-left{position:absolute;top:80px;right:14px;background:rgba(0,0,0,.7);border:2px solid #ff6b35;border-radius:12px;padding:8px 14px;color:#fff;font-size:13px;text-align:center;}
-#hiders-left span{display:block;font-size:22px;font-weight:bold;color:#ff6b35;}
-/* 🔥 BGMI CROSSHAIR CSS 🔥 */
-#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;z-index:100;}
-#crosshair::before{content:'';position:absolute;width:5px;height:5px;background:rgba(255,255,255,1);border:1.5px solid #000;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);}
-#crosshair::after{display:none;}
-#morph-hint{position:absolute;bottom:252px;left:50%;transform:translateX(-50%);background:rgba(78,205,196,.92);border-radius:20px;padding:8px 20px;color:#fff;font-size:14px;font-weight:bold;animation:bob 1s infinite;white-space:nowrap;}
-@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
-#alert-seeker{position:absolute;top:148px;left:14px;background:rgba(255,0,0,.82);border-radius:10px;padding:5px 12px;color:#fff;font-size:13px;font-weight:bold;animation:pulse .5s infinite alternate;}
-#flash{position:fixed;inset:0;background:rgba(255,0,0,.42);pointer-events:none;opacity:0;transition:opacity .4s;}
-#taunt-ring{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;border:3px solid #ffd700;border-radius:50%;pointer-events:none;opacity:0;}
-#msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(78,205,196,.92);border-radius:12px;padding:12px 26px;color:#fff;font-size:16px;font-weight:bold;pointer-events:none;opacity:0;transition:opacity .3s;white-space:nowrap;}
-#kbd-hint{position:absolute;bottom:18px;right:18px;background:rgba(0,0,0,.58);border-radius:8px;padding:8px 12px;color:rgba(255,255,255,.55);font-size:11px;line-height:1.9;}
-#transform-label{position:absolute;top:145px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.72);border:1px solid #4ecdc4;border-radius:10px;padding:5px 14px;color:#4ecdc4;font-size:12px;}
-#controls{position:fixed;bottom:0;left:0;width:100%;height:220px;pointer-events:none;z-index:30;}
-#joy-area{position:absolute;bottom:28px;left:26px;width:128px;height:128px;pointer-events:all;touch-action:none;}
-.joy-base{width:128px;height:128px;border-radius:50%;background:rgba(255,255,255,.1);border:3px solid rgba(255,255,255,.32);position:relative;touch-action:none;}
-.joy-thumb{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.48);border:2px solid rgba(255,255,255,.8);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;}
-#btns{position:absolute;bottom:28px;right:18px;display:flex;flex-direction:column;gap:10px;pointer-events:all;align-items:flex-end;touch-action:none;z-index:35;}
-.btn-row{display:flex;gap:10px;align-items:center;}
-.abtn{width:62px;height:62px;border-radius:50%;border:3px solid;font-size:10px;font-weight:bold;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1.2;text-align:center;touch-action:none;transition:transform .1s,opacity .1s;}
-.abtn:active{transform:scale(.88);opacity:.75;}
-.abtn-jump{background:rgba(255,193,7,.25);border-color:#ffc107;}
-.abtn-taunt{background:rgba(255,107,53,.25);border-color:#ff6b35;}
-.abtn-morph{background:rgba(78,205,196,.25);border-color:#4ecdc4;width:70px;height:70px;font-size:11px;}
-.abtn-morph.active{background:rgba(78,205,196,.65);box-shadow:0 0 18px #4ecdc4;}
-.abtn-morph.dim{opacity:.38;}
-.abtn-shoot{background:rgba(255,68,68,.25);border-color:#ff4444;width:70px;height:70px;font-size:11px;}
-.abtn-shoot:active{background:rgba(255,68,68,.7);box-shadow:0 0 18px #ff4444;}
-/* 🔥 BGMI RIGHT-HALF TOUCH AREA 🔥 */
-#cam-area{position:fixed;top:0;right:0;width:50%;height:100vh;pointer-events:all;z-index:25;touch-action:none;}
-@keyframes tauntRipple{0%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-50%) scale(5);}}
-</style>
-
-<script>
-  let selectedRole = 'hider';
-  
-  function selectRole(r) {
-    selectedRole = r;
-    document.getElementById('card-hider').className = 'role-card' + (r === 'hider' ? ' sel-hider' : '');
-    document.getElementById('card-seeker').className = 'role-card' + (r === 'seeker' ? ' sel-seeker' : '');
-    const grid = document.getElementById('ctrl-grid');
-    if (r === 'seeker') {
-      grid.innerHTML = `<span>⬆️ WASD / Arrows</span><span>Move</span><span>📷 Right Swipe / Mouse</span><span>Camera</span><span>⬛ Space / Jump btn</span><span>Jump</span><span>🔫 F / Shoot btn</span><span>Shoot props</span>`;
-    } else {
-      grid.innerHTML = `<span>⬆️ WASD / Arrows</span><span>Move</span><span>📷 Right Swipe / Mouse</span><span>Camera</span><span>⬛ Space / Jump btn</span><span>Jump</span><span>🎭 E / Morph btn</span><span>Transform</span><span>📣 T / Taunt btn</span><span>Taunt (+coins!)</span>`;
-    }
-  }
-
-  function startGame() {
-    if (window.gameStartFunction) {
-      window.gameStartFunction(selectedRole);
-    } else {
-      alert("Please wait a few seconds, 3D Engine is still loading! 🚀");
-    }
-  }
-
-  function showMenu() {
-    if (window.gameShowMenuFunction) {
-      window.gameShowMenuFunction();
-    }
-  }
-</script>
-
-</head>
-<body>
-
-<div id="screen">
-  <div id="menu">
-    <h1>PROP HUNT</h1>
-    <div class="subtitle">3D Hide &amp; Seek (Flat Map)</div>
-    <div class="desc">Hiders disguise as environment props.<br>Seekers hunt down the hidden players.<br>Can you blend in — or will you be found?</div>
-    <div class="role-row">
-      <div class="role-card sel-hider" id="card-hider" onclick="selectRole('hider')">
-        <div class="role-icon">🎭</div>
-        <div class="role-name">HIDER</div>
-        <div class="role-desc">Transform into props.<br>Blend in. Survive.<br>Earn coins every second!</div>
-        <div style="margin-top:10px;font-size:20px">🪑 📦 🛢️ 🌿 🚮</div>
-      </div>
-      <div class="role-card" id="card-seeker" onclick="selectRole('seeker')">
-        <div class="role-icon">🔦</div>
-        <div class="role-name">SEEKER</div>
-        <div class="role-desc">Hunt the hidden props.<br>Shoot wisely — wrong<br>hits lose points!</div>
-        <div style="margin-top:10px;font-size:20px">🔫 🎯 ⚡ 🔴 💥</div>
-      </div>
-    </div>
-    <div class="ctrl-box">
-      <div class="title">🎮 Controls</div>
-      <div class="ctrl-grid" id="ctrl-grid">
-        <span>⬆️ WASD / Arrows</span><span>Move</span>
-        <span>📷 Right Swipe / Mouse</span><span>Camera</span>
-        <span>⬛ Space / Jump btn</span><span>Jump</span>
-        <span>🎭 E / Morph btn</span><span>Transform</span>
-        <span>📣 T / Taunt btn</span><span>Taunt (+coins!)</span>
-      </div>
-    </div>
-    <button class="btn-start" id="start-btn" onclick="startGame()" disabled>⏳ LOADING 3D...</button>
-    <div class="vs-note">VS 3 AI opponents • 2-minute matches • Earn coins!</div>
-  </div>
-
-  <div id="gameover" style="display:none">
-    <div class="go-emoji" id="go-emoji">🏆</div>
-    <div class="go-title" id="go-title">YOU SURVIVED!</div>
-    <div class="stats-grid">
-      <div class="stat"><div class="stat-lbl">🪙 Coins</div><div class="stat-val" id="st-coins">0</div></div>
-      <div class="stat"><div class="stat-lbl" id="st-lbl2">⏱ Survived</div><div class="stat-val" id="st-val2">0s</div></div>
-      <div class="stat"><div class="stat-lbl" id="st-lbl3">❤️ Health</div><div class="stat-val" id="st-val3">3</div></div>
-      <div class="stat"><div class="stat-lbl">⏳ Time Left</div><div class="stat-val" id="st-time">0s</div></div>
-    </div>
-    <div class="tip" id="go-tip">💡 Tip: Move slowly as a prop — seekers spot movement!</div>
-    <div class="reward" id="go-reward">+0 🪙 added to wallet!</div>
-    <div class="go-btns">
-      <button class="btn-again" onclick="startGame()">▶️ PLAY AGAIN</button>
-      <button class="btn-menu" onclick="showMenu()">🏠 MENU</button>
-    </div>
-  </div>
-</div>
-
-<div id="hud" style="display:none">
-  <div id="hud-top">
-    <div class="hud-badge" id="role-badge">🎭 HIDER</div>
-    <div class="hud-timer" id="timer">2:00</div>
-    <div class="hud-coins" id="coins-hud">🪙 0</div>
-  </div>
-  <div id="hearts">❤️❤️❤️</div>
-  <div id="score-box" style="display:none">🎯 SCORE<span id="score-val">0</span></div>
-  <div id="hiders-left" style="display:none">HIDERS<span id="hiders-val">3</span>left</div>
-  <div id="alert-seeker" style="display:none">⚠️ SEEKER NEARBY!</div>
-  <div id="crosshair" style="display:none"></div>
-  <div id="morph-hint" style="display:none">🎭 Press MORPH to transform!</div>
-  <div id="transform-label" style="display:none">🎭 TRANSFORMED</div>
-  <div id="flash"></div>
-  <div id="taunt-ring"></div>
-  <div id="msg"></div>
-  <div id="kbd-hint">WASD=Move | Mouse=Camera<br>Space=Jump | E=Morph | T=Taunt</div>
-</div>
-
-<div id="controls" style="display:none">
-  <div id="joy-area">
-    <div class="joy-base" id="joy-base">
-      <div class="joy-thumb" id="joy-thumb"></div>
-    </div>
-  </div>
-  <div id="cam-area"></div>
-  <div id="btns">
-    <div class="btn-row" id="hider-btns">
-      <button class="abtn abtn-taunt" id="btn-taunt">📣<br>TAUNT</button>
-      <button class="abtn abtn-jump" id="btn-jump">⬆️<br>JUMP</button>
-    </div>
-    <div class="btn-row">
-      <button class="abtn abtn-morph" id="btn-morph">🎭<br>MORPH</button>
-    </div>
-    <div class="btn-row" id="seeker-btns" style="display:none">
-      <button class="abtn abtn-shoot" id="btn-shoot">🔫<br>SHOOT</button>
-    </div>
-  </div>
-</div>
-
-<script type="importmap">
-  {
-    "imports": {
-      "three": "[https://unpkg.com/three@0.158.0/build/three.module.js](https://unpkg.com/three@0.158.0/build/three.module.js)",
-      "three/addons/": "[https://unpkg.com/three@0.158.0/examples/jsm/](https://unpkg.com/three@0.158.0/examples/jsm/)"
+      "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
     }
   }
 </script>
@@ -441,6 +223,16 @@ canvas{display:block;touch-action:none;}
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+// 🔥 REAL LOADING MANAGER - ENABLES BUTTON WHEN MODELS ARE READY 🔥
+THREE.DefaultLoadingManager.onLoad = function ( ) {
+    console.log( 'All 3D Models Loaded!' );
+    const startBtn = document.getElementById('start-btn');
+    if(startBtn) {
+        startBtn.textContent = '▶ START MATCH';
+        startBtn.disabled = false;
+    }
+};
 
 const G={role:'hider',phase:'menu',timeLeft:120,coins:0,health:3,score:0,kills:0,survivalTime:0,isTransformed:false,currentPropType:null,nearbyPropId:null,timerInterval:null,tauntActive:false,caughtFlash:false,wallet:0};
 
@@ -471,8 +263,6 @@ scene.add(dL2);
 
 const MAP_HALF=30, WALL_H=4.5, GRAV=-18, PLAYER_SPEED=6, PROP_SPEED=2.8, JUMP_VEL=8;
 
-function getGroundY(x, z) { return 0; }
-
 function box(w,h,d,color,opts={}){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color,...opts}));}
 function cyl(rt,rb,h,seg,color,opts={}){return new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),new THREE.MeshLambertMaterial({color,...opts}));}
 function sph(r,color,opts={}){return new THREE.Mesh(new THREE.SphereGeometry(r,8,6),new THREE.MeshLambertMaterial({color,...opts}));}
@@ -485,12 +275,11 @@ let currentAction = null;
 
 function loadCharacterModel() {
   const loader = new GLTFLoader();
-  
   loader.load('girl_mechanic.glb', function (gltf) { 
     basePlayerModel = gltf.scene;
     playerAnimations = gltf.animations;
 
-    // 🔥 FIXED SCALE: Teen guna bada kar diya hai (0.015 -> 0.045) 🔥
+    // 🔥 Scale is set to 0.045 🔥
     basePlayerModel.scale.set(0.045, 0.045, 0.045);
     basePlayerModel.position.y = 0; 
     basePlayerModel.rotation.y = Math.PI; 
@@ -527,22 +316,15 @@ function setupAnimations() {
   }
 }
 
-// ─── CUSTOM MAP LOADING LOGIC (FLATTENED) ───
+// ─── MAP LOADING LOGIC ───
 let customMapModel = null;
 function loadCustomMap(){
   const loader = new GLTFLoader();
-  const modelUrl = 'rocky_ground_with_moss (1).glb'; 
-
-  loader.load(modelUrl, function (gltf) {
+  loader.load('rocky_ground_with_moss (1).glb', function (gltf) {
     customMapModel = gltf.scene;
     customMapModel.scale.set(6, 0.01, 6); 
     customMapModel.position.set(0, 0, 0);
-    customMapModel.traverse((node) => {
-      if (node.isMesh) {
-        node.castShadow = true;
-        node.receiveShadow = true;
-      }
-    });
+    customMapModel.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; } });
     scene.add(customMapModel);
   });
 }
@@ -551,21 +333,10 @@ function loadCustomMap(){
 let treeModel = null;
 function loadTrees(){
   const loader = new GLTFLoader();
-  const treeUrl = 'psx_birch_tree.glb';
-
-  loader.load(treeUrl, function (gltf) {
+  loader.load('psx_birch_tree.glb', function (gltf) {
     treeModel = gltf.scene;
-    treeModel.traverse((node) => {
-      if (node.isMesh) {
-        node.castShadow = true;
-        node.receiveShadow = true;
-      }
-    });
-
-    const treePositions = [ 
-      [15, 0, 15], [-20, 0, 20], [25, 0, -15], [-25, 0, -20], 
-      [0, 0, -25], [20, 0, 5], [-25, 0, 0], [0, 0, 25] 
-    ];
+    treeModel.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; } });
+    const treePositions = [ [15, 0, 15], [-20, 0, 20], [25, 0, -15], [-25, 0, -20], [0, 0, -25], [20, 0, 5], [-25, 0, 0], [0, 0, 25] ];
     treePositions.forEach(pos => {
       const treeClone = treeModel.clone();
       treeClone.scale.set(0.002, 0.002, 0.002); 
@@ -579,27 +350,13 @@ function loadTrees(){
 let rockModel = null;
 function loadRocks(){
   const loader = new GLTFLoader();
-  const rockUrl = 'stone_rockpart6.glb';
-
-  loader.load(rockUrl, function (gltf) {
+  loader.load('stone_rockpart6.glb', function (gltf) {
     rockModel = gltf.scene;
-    rockModel.traverse((node) => {
-      if (node.isMesh) {
-        node.castShadow = true;
-        node.receiveShadow = true;
-      }
-    });
-
-    const rockPositions = [ 
-      [12, 0, -12], [-18, 0, 18], [22, 0, 22], [-25, 0, -10], 
-      [8, 0, 26], [-8, 0, -22] 
-    ];
-    
-    const baseScale = 1.0; 
-
+    rockModel.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; } });
+    const rockPositions = [ [12, 0, -12], [-18, 0, 18], [22, 0, 22], [-25, 0, -10], [8, 0, 26], [-8, 0, -22] ];
     rockPositions.forEach(pos => {
       const rockClone = rockModel.clone();
-      const finalScale = baseScale * (0.8 + Math.random() * 0.4); 
+      const finalScale = 1.0 * (0.8 + Math.random() * 0.4); 
       rockClone.scale.set(finalScale, finalScale, finalScale); 
       rockClone.position.set(pos[0], pos[1], pos[2]);
       rockClone.rotation.y = Math.random() * Math.PI * 2; 
@@ -612,28 +369,13 @@ function loadRocks(){
 let extraModel = null;
 function loadExtraModel(){
   const loader = new GLTFLoader();
-  const modelUrl = 'Sloped_dirt_path.glb'; 
-
-  loader.load(modelUrl, function (gltf) {
+  loader.load('Sloped_dirt_path.glb', function (gltf) {
     extraModel = gltf.scene;
-    extraModel.traverse((node) => {
-      if (node.isMesh) {
-        node.castShadow = true;
-        node.receiveShadow = true;
-      }
-    });
-
-    const modelPositions = [ 
-      [0, 0, 0],     
-      [-15, 0, 15],  
-      [18, 0, -18]   
-    ];
-    
-    const baseScale = 1.0; 
-
+    extraModel.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; } });
+    const modelPositions = [ [0, 0, 0], [-15, 0, 15], [18, 0, -18] ];
     modelPositions.forEach((pos, index) => {
       const modelClone = extraModel.clone();
-      modelClone.scale.set(baseScale, baseScale, baseScale); 
+      modelClone.scale.set(1.0, 1.0, 1.0); 
       modelClone.position.set(pos[0], pos[1] + 0.1, pos[2]); 
       modelClone.rotation.y = (Math.PI / 2) * index; 
       scene.add(modelClone);
@@ -642,46 +384,28 @@ function loadExtraModel(){
 }
 
 const PROP_DEFS=[
-  {id:'p1',type:'crate',pos:[-15,0,-10],col:0x8B6914,sx:1,sy:1,sz:1},
-  {id:'p2',type:'crate',pos:[-17,0,-8],col:0x7A5C10,sx:.8,sy:.8,sz:.8},
-  {id:'p3',type:'crate',pos:[-15,1,-10],col:0x8B6914,sx:1,sy:1,sz:1},
-  {id:'p4',type:'barrel',pos:[10,0,15],col:0x2E4057,sx:.6,sy:1.2,sz:.6},
-  {id:'p5',type:'barrel',pos:[12,0,15],col:0x3A5068,sx:.6,sy:1.2,sz:.6},
-  {id:'p6',type:'barrel',pos:[10,0,17],col:0x2E4057,sx:.6,sy:1.2,sz:.6},
-  {id:'p7',type:'chair',pos:[5,0,-20],col:0x5C4033,sx:.7,sy:.8,sz:.7},
-  {id:'p8',type:'chair',pos:[10,0,-20],col:0x5C4033,sx:.7,sy:.8,sz:.7},
-  {id:'p9',type:'table',pos:[7,0,-22],col:0x6D4C41,sx:1.5,sy:.8,sz:.9},
-  {id:'p10',type:'plant',pos:[-7,0,7],col:0x2E7D32,sx:.6,sy:1.2,sz:.6},
-  {id:'p11',type:'plant',pos:[-10,0,8],col:0x388E3C,sx:.5,sy:1.0,sz:.5},
-  {id:'p12',type:'trash',pos:[20,0,-5],col:0x455A64,sx:.5,sy:1.0,sz:.5},
-  {id:'p13',type:'trash',pos:[22,0,-5],col:0x546E7A,sx:.5,sy:1.0,sz:.5},
-  {id:'p14',type:'tire',pos:[-25,0,20],col:0x212121,sx:.8,sy:.3,sz:.8},
-  {id:'p15',type:'tire',pos:[-22,0,20],col:0x212121,sx:.8,sy:.3,sz:.8},
-  {id:'p16',type:'box',pos:[0,0,25],col:0xFF8F00,sx:.8,sy:.8,sz:.8},
-  {id:'p17',type:'box',pos:[2,0,25],col:0xFFA000,sx:.8,sy:.8,sz:.8},
-  {id:'p18',type:'cone',pos:[-12,0,-28],col:0xE64A19,sx:.5,sy:1.0,sz:.5},
-  {id:'p19',type:'cone',pos:[-7,0,-28],col:0xE64A19,sx:.5,sy:1.0,sz:.5},
-  {id:'p20',type:'bucket',pos:[25,0,12],col:0x1565C0,sx:.5,sy:.7,sz:.5},
-  {id:'p21',type:'crate',pos:[25,0,15],col:0x8B6914,sx:1,sy:1,sz:1},
-  {id:'p22',type:'barrel',pos:[-25,0,-15],col:0x4E342E,sx:.6,sy:1.2,sz:.6},
-  {id:'p23',type:'plant',pos:[25,0,-25],col:0x1B5E20,sx:.7,sy:1.4,sz:.7},
-  {id:'p24',type:'box',pos:[-15,0,28],col:0x6A1B9A,sx:.8,sy:.8,sz:.8},
+  {id:'p1',type:'crate',pos:[-15,0,-10],col:0x8B6914,sx:1,sy:1,sz:1}, {id:'p2',type:'crate',pos:[-17,0,-8],col:0x7A5C10,sx:.8,sy:.8,sz:.8},
+  {id:'p3',type:'crate',pos:[-15,1,-10],col:0x8B6914,sx:1,sy:1,sz:1}, {id:'p4',type:'barrel',pos:[10,0,15],col:0x2E4057,sx:.6,sy:1.2,sz:.6},
+  {id:'p5',type:'barrel',pos:[12,0,15],col:0x3A5068,sx:.6,sy:1.2,sz:.6}, {id:'p6',type:'barrel',pos:[10,0,17],col:0x2E4057,sx:.6,sy:1.2,sz:.6},
+  {id:'p7',type:'chair',pos:[5,0,-20],col:0x5C4033,sx:.7,sy:.8,sz:.7}, {id:'p8',type:'chair',pos:[10,0,-20],col:0x5C4033,sx:.7,sy:.8,sz:.7},
+  {id:'p9',type:'table',pos:[7,0,-22],col:0x6D4C41,sx:1.5,sy:.8,sz:.9}, {id:'p10',type:'plant',pos:[-7,0,7],col:0x2E7D32,sx:.6,sy:1.2,sz:.6},
+  {id:'p11',type:'plant',pos:[-10,0,8],col:0x388E3C,sx:.5,sy:1.0,sz:.5}, {id:'p12',type:'trash',pos:[20,0,-5],col:0x455A64,sx:.5,sy:1.0,sz:.5},
+  {id:'p13',type:'trash',pos:[22,0,-5],col:0x546E7A,sx:.5,sy:1.0,sz:.5}, {id:'p14',type:'tire',pos:[-25,0,20],col:0x212121,sx:.8,sy:.3,sz:.8},
+  {id:'p15',type:'tire',pos:[-22,0,20],col:0x212121,sx:.8,sy:.3,sz:.8}, {id:'p16',type:'box',pos:[0,0,25],col:0xFF8F00,sx:.8,sy:.8,sz:.8},
+  {id:'p17',type:'box',pos:[2,0,25],col:0xFFA000,sx:.8,sy:.8,sz:.8}, {id:'p18',type:'cone',pos:[-12,0,-28],col:0xE64A19,sx:.5,sy:1.0,sz:.5},
+  {id:'p19',type:'cone',pos:[-7,0,-28],col:0xE64A19,sx:.5,sy:1.0,sz:.5}, {id:'p20',type:'bucket',pos:[25,0,12],col:0x1565C0,sx:.5,sy:.7,sz:.5},
+  {id:'p21',type:'crate',pos:[25,0,15],col:0x8B6914,sx:1,sy:1,sz:1}, {id:'p22',type:'barrel',pos:[-25,0,-15],col:0x4E342E,sx:.6,sy:1.2,sz:.6},
+  {id:'p23',type:'plant',pos:[25,0,-25],col:0x1B5E20,sx:.7,sy:1.4,sz:.7}, {id:'p24',type:'box',pos:[-15,0,28],col:0x6A1B9A,sx:.8,sy:.8,sz:.8},
   {id:'p25',type:'tire',pos:[20,0,-25],col:0x212121,sx:.8,sy:.3,sz:.8},
 ];
 
 function makePropMesh(def){
-  const{type,col}=def;const g=new THREE.Group();
-  const mat=()=>new THREE.MeshLambertMaterial({color:col});
+  const{type,col}=def;const g=new THREE.Group(); const mat=()=>new THREE.MeshLambertMaterial({color:col});
   switch(type){
     case'crate':{const m=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),mat());m.position.y=0.5;m.castShadow=true;g.add(m);break;}
     case'barrel':{const m=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,1.8,12),mat());m.position.y=0.9;m.castShadow=true;g.add(m);break;}
-    case'chair':{
-      const seat=box(1,.1,1,col);seat.position.y=0.4;g.add(seat);
-      const back=box(1,1.1,.1,col);back.position.set(0,1,-.45);g.add(back);
-      [[-0.4,0,0.35],[0.4,0,0.35],[-0.4,0,-0.35],[0.4,0,-0.35]].forEach(([x,y,z])=>{const leg=box(.1,.7,.1,col);leg.position.set(x,0.35,z);g.add(leg);});break;}
-    case'table':{
-      const top=box(2,.12,1.2,col);top.position.y=.75;g.add(top);
-      [[-0.85,0,-0.5],[0.85,0,-0.5],[-0.85,0,0.5],[0.85,0,0.5]].forEach(([x,y,z])=>{const leg=box(.1,.8,.1,col);leg.position.set(x,0.4,z);g.add(leg);});break;}
+    case'chair':{const seat=box(1,.1,1,col);seat.position.y=0.4;g.add(seat);const back=box(1,1.1,.1,col);back.position.set(0,1,-.45);g.add(back);[[-0.4,0,0.35],[0.4,0,0.35],[-0.4,0,-0.35],[0.4,0,-0.35]].forEach(([x,y,z])=>{const leg=box(.1,.7,.1,col);leg.position.set(x,0.35,z);g.add(leg);});break;}
+    case'table':{const top=box(2,.12,1.2,col);top.position.y=.75;g.add(top);[[-0.85,0,-0.5],[0.85,0,-0.5],[-0.85,0,0.5],[0.85,0,0.5]].forEach(([x,y,z])=>{const leg=box(.1,.8,.1,col);leg.position.set(x,0.4,z);g.add(leg);});break;}
     case'plant':{const pot=cyl(.3,.4,.6,8,0x8D6E63);pot.position.y=0.3;g.add(pot);const lv=sph(.5,col);lv.position.y=1;lv.castShadow=true;g.add(lv);break;}
     case'trash':{const m=new THREE.Mesh(new THREE.CylinderGeometry(.4,.35,1,10),mat());m.position.y=0.5;m.castShadow=true;g.add(m);break;}
     case'tire':{const m=new THREE.Mesh(new THREE.TorusGeometry(.5,.18,8,16),mat());m.rotation.x=Math.PI/2;m.position.y=0.18;m.castShadow=true;g.add(m);break;}
@@ -698,7 +422,6 @@ function buildProps(){PROP_DEFS.forEach(def=>{const g=makePropMesh(def);g.positi
 const player={pos:new THREE.Vector3(0,0,0),vel:new THREE.Vector3(),onGround:false,yaw:0,pitch:.22,shootCooldown:0,mesh:null};
 let playerMesh=null,transformedMesh=null,transformedDot=null;
 
-// 🔥 NO FALLBACK BOX, ONLY MECHANIC GIRL 🔥
 function buildPlayerMesh(role){
   if(playerMesh) scene.remove(playerMesh);
   
@@ -772,7 +495,6 @@ const bullets=[];
 const bulletGeo=new THREE.SphereGeometry(.08,6,6);
 const bulletMat=new THREE.MeshBasicMaterial({color:0xffff00});
 
-// 🔥 BGMI BULLET SPAWN (From Camera Crosshair) 🔥
 function spawnBullet(){
   const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
   const mesh = new THREE.Mesh(bulletGeo, bulletMat);
@@ -788,7 +510,6 @@ window.addEventListener('keyup',e=>keys[e.code]=false);
 const joy={x:0,y:0,active:false,pid:null,ox:0,oy:0};
 const camTouch={pid:null,lx:0,ly:0};
 const JRAD=52;
-
 const joyBase = document.getElementById('joy-base');
 const joyThumb = document.getElementById('joy-thumb');
 
@@ -798,8 +519,7 @@ function updateJoy(x, y) {
   const cd = Math.min(dist, JRAD);
   const ang = Math.atan2(dy, dx);
   let power = Math.min(dist / (JRAD * 0.5), 1);
-  joy.x = Math.cos(ang) * power;
-  joy.y = Math.sin(ang) * power;
+  joy.x = Math.cos(ang) * power; joy.y = Math.sin(ang) * power;
   joyThumb.style.transform = `translate(-50%, -50%) translate(${Math.cos(ang)*cd}px, ${Math.sin(ang)*cd}px)`;
 }
 
@@ -808,57 +528,16 @@ function resetJoy() {
   joyThumb.style.transform = 'translate(-50%, -50%)';
 }
 
-joyBase.addEventListener('touchstart', e => {
-  e.preventDefault();
-  joy.active = true;
-  const t = e.changedTouches[0];
-  joy.pid = t.identifier;
-  const r = joyBase.getBoundingClientRect();
-  joy.ox = r.left + r.width / 2;
-  joy.oy = r.top + r.height / 2;
-  updateJoy(t.clientX, t.clientY);
-}, {passive: false});
-
-joyBase.addEventListener('touchmove', e => {
-  e.preventDefault();
-  if(!joy.active) return;
-  for(let i=0; i<e.changedTouches.length; i++) {
-    if(e.changedTouches[i].identifier === joy.pid) {
-      updateJoy(e.changedTouches[i].clientX, e.changedTouches[i].clientY);
-      break;
-    }
-  }
-}, {passive: false});
-
-joyBase.addEventListener('touchend', e => {
-  for(let i=0; i<e.changedTouches.length; i++) {
-    if(e.changedTouches[i].identifier === joy.pid) resetJoy();
-  }
-});
+joyBase.addEventListener('touchstart', e => { e.preventDefault(); joy.active = true; const t = e.changedTouches[0]; joy.pid = t.identifier; const r = joyBase.getBoundingClientRect(); joy.ox = r.left + r.width / 2; joy.oy = r.top + r.height / 2; updateJoy(t.clientX, t.clientY); }, {passive: false});
+joyBase.addEventListener('touchmove', e => { e.preventDefault(); if(!joy.active) return; for(let i=0; i<e.changedTouches.length; i++) { if(e.changedTouches[i].identifier === joy.pid) { updateJoy(e.changedTouches[i].clientX, e.changedTouches[i].clientY); break; } } }, {passive: false});
+joyBase.addEventListener('touchend', e => { for(let i=0; i<e.changedTouches.length; i++) { if(e.changedTouches[i].identifier === joy.pid) resetJoy(); } });
 joyBase.addEventListener('touchcancel', e => { resetJoy(); });
-
-joyBase.addEventListener('mousedown', e => {
-  joy.active = true; joy.pid = 'mouse';
-  const r = joyBase.getBoundingClientRect();
-  joy.ox = r.left + r.width/2; joy.oy = r.top + r.height/2;
-  updateJoy(e.clientX, e.clientY);
-});
-window.addEventListener('mousemove', e => {
-  if(joy.active && joy.pid === 'mouse') updateJoy(e.clientX, e.clientY);
-});
-window.addEventListener('mouseup', e => {
-  if(joy.active && joy.pid === 'mouse') resetJoy();
-});
+joyBase.addEventListener('mousedown', e => { joy.active = true; joy.pid = 'mouse'; const r = joyBase.getBoundingClientRect(); joy.ox = r.left + r.width/2; joy.oy = r.top + r.height/2; updateJoy(e.clientX, e.clientY); });
+window.addEventListener('mousemove', e => { if(joy.active && joy.pid === 'mouse') updateJoy(e.clientX, e.clientY); });
+window.addEventListener('mouseup', e => { if(joy.active && joy.pid === 'mouse') resetJoy(); });
 
 const camArea = document.getElementById('cam-area');
-camArea.addEventListener('touchstart', e => {
-  e.preventDefault();
-  camTouch.pid = e.changedTouches[0].identifier;
-  camTouch.lx = e.changedTouches[0].clientX;
-  camTouch.ly = e.changedTouches[0].clientY;
-}, {passive: false});
-
-// 🔥 INCREASED BGMI PITCH LIMITS 🔥
+camArea.addEventListener('touchstart', e => { e.preventDefault(); camTouch.pid = e.changedTouches[0].identifier; camTouch.lx = e.changedTouches[0].clientX; camTouch.ly = e.changedTouches[0].clientY; }, {passive: false});
 camArea.addEventListener('touchmove', e => {
   e.preventDefault();
   if(G.phase !== 'playing') return;
@@ -872,12 +551,7 @@ camArea.addEventListener('touchmove', e => {
     }
   }
 }, {passive: false});
-
-const endCam = e => {
-  for(let i=0; i<e.changedTouches.length; i++) {
-    if(e.changedTouches[i].identifier === camTouch.pid) camTouch.pid = null;
-  }
-};
+const endCam = e => { for(let i=0; i<e.changedTouches.length; i++) { if(e.changedTouches[i].identifier === camTouch.pid) camTouch.pid = null; } };
 camArea.addEventListener('touchend', endCam);
 camArea.addEventListener('touchcancel', endCam);
 
@@ -1153,7 +827,6 @@ function gameLoop() {
     player.pos.x = Math.max(-MAP_HALF*2, Math.min(MAP_HALF*2, player.pos.x));
     player.pos.z = Math.max(-MAP_HALF*2, Math.min(MAP_HALF*2, player.pos.z));
 
-    // 🔥 CHARACTER FACE CROSSHAIR 🔥
     if(playerMesh) {
       playerMesh.position.copy(player.pos);
       playerMesh.rotation.y = player.yaw;
@@ -1180,17 +853,14 @@ function gameLoop() {
 
     player.shootCooldown = Math.max(0, player.shootCooldown - dt);
 
-    // 🔥 BGMI OVER-THE-SHOULDER CAMERA (FIXED & ADJUSTED FOR LARGER CHARACTER) 🔥
-    const camDist = 4.5; // Thoda piche kiya (3.5 -> 4.5)
-    const camHeightOffset = 2.2; // Thoda upar kiya (1.6 -> 2.2)
-    const camRightOffset = 1.2; // Thoda side me kiya (1.0 -> 1.2)
+    const camDist = 4.5; 
+    const camHeightOffset = 2.2; 
+    const camRightOffset = 1.2; 
 
-    // Character ke kandhe (shoulder) ki position nikalo
     const shoulderPos = player.pos.clone().add(new THREE.Vector3(0, camHeightOffset, 0));
     const right = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
     shoulderPos.add(right.multiplyScalar(camRightOffset));
 
-    // Camera ko orbit math ke hisaab se set karo
     const hDist = Math.cos(player.pitch) * camDist;
     const vDist = Math.sin(player.pitch) * camDist;
 
@@ -1200,13 +870,10 @@ function gameLoop() {
         shoulderPos.z + Math.cos(player.yaw) * hDist
     );
 
-    // BUG FIX: Camera ko zameen ke niche jaane se roko! 
     targetCamPos.y = Math.max(0.8, targetCamPos.y); 
 
-    // Smooth camera movement
     camera.position.lerp(targetCamPos, 0.45);
     
-    // Camera hamesha crosshair ki taraf aim karega
     const lookDir = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
     const aimingRight = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
     lookDir.applyAxisAngle(aimingRight, player.pitch); 
@@ -1240,12 +907,6 @@ styleTag.textContent = `
 }`;
 document.head.appendChild(styleTag);
 
-// 🔥 GAME READY - ENABLE START BUTTON 🔥
-const startBtn = document.getElementById('start-btn');
-if(startBtn) {
-  startBtn.textContent = '▶ START MATCH';
-  startBtn.disabled = false;
-}
 </script>
 </body>
 </html>
