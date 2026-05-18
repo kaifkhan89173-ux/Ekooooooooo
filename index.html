@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Prop Hunt 3D — Mechanic Girl & Fixed Camera</title>
+<title>Prop Hunt 3D — Mechanic Girl (Fixed Scale)</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none;touch-action:none;}
@@ -215,7 +215,225 @@ canvas{display:block;touch-action:none;}
   {
     "imports": {
       "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
+      "three/addons```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Prop Hunt 3D — Mechanic Girl (Fixed Scale)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none;touch-action:none;}
+canvas{display:block;touch-action:none;}
+#screen{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;}
+#menu{background:radial-gradient(ellipse at center,#1a0a2e 0%,#0d0a1a 65%,#000 100%);width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;overflow-y:auto;}
+#menu h1{font-size:clamp(38px,8vw,74px);font-weight:900;color:#fff;letter-spacing:3px;text-shadow:0 0 30px #ff6b35,0 0 60px #ff6b35;margin-bottom:6px;}
+.subtitle{font-size:clamp(12px,3vw,18px);color:#4ecdc4;letter-spacing:5px;text-transform:uppercase;margin-bottom:28px;}
+.desc{color:rgba(255,255,255,.55);font-size:14px;line-height:1.8;margin-bottom:28px;max-width:420px;}
+.role-row{display:flex;gap:18px;margin-bottom:28px;flex-wrap:wrap;justify-content:center;}
+.role-card{background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.18);border-radius:16px;padding:22px 28px;cursor:pointer;transition:all .3s;min-width:155px;color:#fff;}
+.role-card:hover{transform:scale(1.05);}
+.role-card.sel-hider{border-color:#4ecdc4;background:rgba(78,205,196,.18);box-shadow:0 0 28px rgba(78,205,196,.35);}
+.role-card.sel-seeker{border-color:#ff6b35;background:rgba(255,107,53,.18);box-shadow:0 0 28px rgba(255,107,53,.35);}
+.role-icon{font-size:44px;margin-bottom:10px;}
+.role-name{font-size:20px;font-weight:bold;margin-bottom:6px;}
+.role-desc{font-size:12px;color:rgba(255,255,255,.55);line-height:1.6;}
+.ctrl-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 24px;margin-bottom:28px;color:rgba(255,255,255,.65);font-size:13px;max-width:500px;width:100%;}
+.ctrl-box .title{color:#ffd700;font-weight:bold;margin-bottom:8px;}
+.ctrl-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;text-align:left;}
+.btn-start{background:linear-gradient(135deg,#ff6b35,#ff4444);border:none;border-radius:50px;padding:16px 56px;font-size:20px;font-weight:bold;color:#fff;cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:all .3s;box-shadow:0 8px 28px rgba(255,107,53,.5);}
+.btn-start:hover{transform:scale(1.06);box-shadow:0 12px 38px rgba(255,107,53,.7);}
+.btn-start:disabled{background:#555;cursor:not-allowed;transform:none;box-shadow:none;color:#aaa;}
+.vs-note{margin-top:16px;color:rgba(255,255,255,.28);font-size:12px;}
+#gameover{background:rgba(0,0,0,.93);width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;padding:20px;text-align:center;}
+.go-emoji{font-size:clamp(48px,10vw,88px);}
+.go-title{font-size:clamp(26px,6vw,56px);font-weight:900;margin-bottom:20px;text-shadow:0 0 24px currentColor;}
+.go-title.win{color:#4ecdc4;}.go-title.lose{color:#ff4444;}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px;max-width:380px;width:100%;}
+.stat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px;}
+.stat-lbl{font-size:11px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.stat-val{font-size:28px;font-weight:bold;color:#ffd700;}
+.tip{background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.3);border-radius:10px;padding:10px 20px;font-size:13px;color:rgba(255,255,255,.75);margin-bottom:22px;max-width:420px;}
+.reward{font-size:18px;color:#ffd700;font-weight:bold;margin-bottom:24px;}
+.go-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+.btn-again{background:linear-gradient(135deg,#4ecdc4,#44a08d);border:none;border-radius:50px;padding:14px 40px;font-size:17px;font-weight:bold;color:#fff;cursor:pointer;transition:all .3s;box-shadow:0 6px 24px rgba(78,205,196,.38);text-transform:uppercase;}
+.btn-again:hover{transform:scale(1.06);}
+.btn-menu{background:linear-gradient(135deg,#444,#222);border:none;border-radius:50px;padding:14px 40px;font-size:17px;font-weight:bold;color:#fff;cursor:pointer;transition:all .3s;text-transform:uppercase;}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:20;}
+#hud-top{display:flex;justify-content:space-between;align-items:flex-start;padding:14px;}
+.hud-badge{background:rgba(0,0,0,.72);border-radius:12px;padding:8px 14px;border:2px solid #4ecdc4;color:#4ecdc4;text-align:center;font-size:13px;font-weight:bold;}
+.hud-badge.seeker{border-color:#ff6b35;color:#ff6b35;}
+.hud-timer{background:rgba(0,0,0,.72);border:2px solid #ff6b35;border-radius:12px;padding:8px 20px;color:#fff;font-size:28px;font-weight:bold;text-shadow:0 0 10px #ff6b35;min-width:80px;text-align:center;}
+.hud-timer.urgent{border-color:#ff0000;color:#ff4444;animation:pulse .5s infinite alternate;}
+@keyframes pulse{from{transform:scale(1)}to{transform:scale(1.08)}}
+.hud-coins{background:rgba(0,0,0,.72);border:2px solid #ffd700;border-radius:12px;padding:8px 14px;color:#ffd700;font-size:18px;font-weight:bold;}
+#hearts{position:absolute;top:80px;left:14px;background:rgba(0,0,0,.7);border:2px solid #ff4444;border-radius:12px;padding:8px 12px;font-size:20px;display:flex;gap:3px;}
+#score-box{position:absolute;top:80px;right:14px;background:rgba(0,0,0,.7);border:2px solid #ff6b35;border-radius:12px;padding:8px 14px;color:#fff;font-size:14px;text-align:center;}
+#score-box span{display:block;font-size:22px;font-weight:bold;color:#ff6b35;}
+#hiders-left{position:absolute;top:80px;right:14px;background:rgba(0,0,0,.7);border:2px solid #ff6b35;border-radius:12px;padding:8px 14px;color:#fff;font-size:13px;text-align:center;}
+#hiders-left span{display:block;font-size:22px;font-weight:bold;color:#ff6b35;}
+/* 🔥 BGMI CROSSHAIR CSS 🔥 */
+#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;z-index:100;}
+#crosshair::before{content:'';position:absolute;width:5px;height:5px;background:rgba(255,255,255,1);border:1.5px solid #000;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);}
+#crosshair::after{display:none;}
+#morph-hint{position:absolute;bottom:252px;left:50%;transform:translateX(-50%);background:rgba(78,205,196,.92);border-radius:20px;padding:8px 20px;color:#fff;font-size:14px;font-weight:bold;animation:bob 1s infinite;white-space:nowrap;}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
+#alert-seeker{position:absolute;top:148px;left:14px;background:rgba(255,0,0,.82);border-radius:10px;padding:5px 12px;color:#fff;font-size:13px;font-weight:bold;animation:pulse .5s infinite alternate;}
+#flash{position:fixed;inset:0;background:rgba(255,0,0,.42);pointer-events:none;opacity:0;transition:opacity .4s;}
+#taunt-ring{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;border:3px solid #ffd700;border-radius:50%;pointer-events:none;opacity:0;}
+#msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(78,205,196,.92);border-radius:12px;padding:12px 26px;color:#fff;font-size:16px;font-weight:bold;pointer-events:none;opacity:0;transition:opacity .3s;white-space:nowrap;}
+#kbd-hint{position:absolute;bottom:18px;right:18px;background:rgba(0,0,0,.58);border-radius:8px;padding:8px 12px;color:rgba(255,255,255,.55);font-size:11px;line-height:1.9;}
+#transform-label{position:absolute;top:145px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.72);border:1px solid #4ecdc4;border-radius:10px;padding:5px 14px;color:#4ecdc4;font-size:12px;}
+#controls{position:fixed;bottom:0;left:0;width:100%;height:220px;pointer-events:none;z-index:30;}
+#joy-area{position:absolute;bottom:28px;left:26px;width:128px;height:128px;pointer-events:all;touch-action:none;}
+.joy-base{width:128px;height:128px;border-radius:50%;background:rgba(255,255,255,.1);border:3px solid rgba(255,255,255,.32);position:relative;touch-action:none;}
+.joy-thumb{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.48);border:2px solid rgba(255,255,255,.8);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;}
+#btns{position:absolute;bottom:28px;right:18px;display:flex;flex-direction:column;gap:10px;pointer-events:all;align-items:flex-end;touch-action:none;z-index:35;}
+.btn-row{display:flex;gap:10px;align-items:center;}
+.abtn{width:62px;height:62px;border-radius:50%;border:3px solid;font-size:10px;font-weight:bold;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1.2;text-align:center;touch-action:none;transition:transform .1s,opacity .1s;}
+.abtn:active{transform:scale(.88);opacity:.75;}
+.abtn-jump{background:rgba(255,193,7,.25);border-color:#ffc107;}
+.abtn-taunt{background:rgba(255,107,53,.25);border-color:#ff6b35;}
+.abtn-morph{background:rgba(78,205,196,.25);border-color:#4ecdc4;width:70px;height:70px;font-size:11px;}
+.abtn-morph.active{background:rgba(78,205,196,.65);box-shadow:0 0 18px #4ecdc4;}
+.abtn-morph.dim{opacity:.38;}
+.abtn-shoot{background:rgba(255,68,68,.25);border-color:#ff4444;width:70px;height:70px;font-size:11px;}
+.abtn-shoot:active{background:rgba(255,68,68,.7);box-shadow:0 0 18px #ff4444;}
+/* 🔥 BGMI RIGHT-HALF TOUCH AREA 🔥 */
+#cam-area{position:fixed;top:0;right:0;width:50%;height:100vh;pointer-events:all;z-index:25;touch-action:none;}
+@keyframes tauntRipple{0%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-50%) scale(5);}}
+</style>
+
+<script>
+  let selectedRole = 'hider';
+  
+  function selectRole(r) {
+    selectedRole = r;
+    document.getElementById('card-hider').className = 'role-card' + (r === 'hider' ? ' sel-hider' : '');
+    document.getElementById('card-seeker').className = 'role-card' + (r === 'seeker' ? ' sel-seeker' : '');
+    const grid = document.getElementById('ctrl-grid');
+    if (r === 'seeker') {
+      grid.innerHTML = `<span>⬆️ WASD / Arrows</span><span>Move</span><span>📷 Right Swipe / Mouse</span><span>Camera</span><span>⬛ Space / Jump btn</span><span>Jump</span><span>🔫 F / Shoot btn</span><span>Shoot props</span>`;
+    } else {
+      grid.innerHTML = `<span>⬆️ WASD / Arrows</span><span>Move</span><span>📷 Right Swipe / Mouse</span><span>Camera</span><span>⬛ Space / Jump btn</span><span>Jump</span><span>🎭 E / Morph btn</span><span>Transform</span><span>📣 T / Taunt btn</span><span>Taunt (+coins!)</span>`;
+    }
+  }
+
+  function startGame() {
+    if (window.gameStartFunction) {
+      window.gameStartFunction(selectedRole);
+    } else {
+      alert("Please wait a few seconds, 3D Engine is still loading! 🚀");
+    }
+  }
+
+  function showMenu() {
+    if (window.gameShowMenuFunction) {
+      window.gameShowMenuFunction();
+    }
+  }
+</script>
+
+</head>
+<body>
+
+<div id="screen">
+  <div id="menu">
+    <h1>PROP HUNT</h1>
+    <div class="subtitle">3D Hide &amp; Seek (Flat Map)</div>
+    <div class="desc">Hiders disguise as environment props.<br>Seekers hunt down the hidden players.<br>Can you blend in — or will you be found?</div>
+    <div class="role-row">
+      <div class="role-card sel-hider" id="card-hider" onclick="selectRole('hider')">
+        <div class="role-icon">🎭</div>
+        <div class="role-name">HIDER</div>
+        <div class="role-desc">Transform into props.<br>Blend in. Survive.<br>Earn coins every second!</div>
+        <div style="margin-top:10px;font-size:20px">🪑 📦 🛢️ 🌿 🚮</div>
+      </div>
+      <div class="role-card" id="card-seeker" onclick="selectRole('seeker')">
+        <div class="role-icon">🔦</div>
+        <div class="role-name">SEEKER</div>
+        <div class="role-desc">Hunt the hidden props.<br>Shoot wisely — wrong<br>hits lose points!</div>
+        <div style="margin-top:10px;font-size:20px">🔫 🎯 ⚡ 🔴 💥</div>
+      </div>
+    </div>
+    <div class="ctrl-box">
+      <div class="title">🎮 Controls</div>
+      <div class="ctrl-grid" id="ctrl-grid">
+        <span>⬆️ WASD / Arrows</span><span>Move</span>
+        <span>📷 Right Swipe / Mouse</span><span>Camera</span>
+        <span>⬛ Space / Jump btn</span><span>Jump</span>
+        <span>🎭 E / Morph btn</span><span>Transform</span>
+        <span>📣 T / Taunt btn</span><span>Taunt (+coins!)</span>
+      </div>
+    </div>
+    <button class="btn-start" id="start-btn" onclick="startGame()" disabled>⏳ LOADING 3D...</button>
+    <div class="vs-note">VS 3 AI opponents • 2-minute matches • Earn coins!</div>
+  </div>
+
+  <div id="gameover" style="display:none">
+    <div class="go-emoji" id="go-emoji">🏆</div>
+    <div class="go-title" id="go-title">YOU SURVIVED!</div>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-lbl">🪙 Coins</div><div class="stat-val" id="st-coins">0</div></div>
+      <div class="stat"><div class="stat-lbl" id="st-lbl2">⏱ Survived</div><div class="stat-val" id="st-val2">0s</div></div>
+      <div class="stat"><div class="stat-lbl" id="st-lbl3">❤️ Health</div><div class="stat-val" id="st-val3">3</div></div>
+      <div class="stat"><div class="stat-lbl">⏳ Time Left</div><div class="stat-val" id="st-time">0s</div></div>
+    </div>
+    <div class="tip" id="go-tip">💡 Tip: Move slowly as a prop — seekers spot movement!</div>
+    <div class="reward" id="go-reward">+0 🪙 added to wallet!</div>
+    <div class="go-btns">
+      <button class="btn-again" onclick="startGame()">▶️ PLAY AGAIN</button>
+      <button class="btn-menu" onclick="showMenu()">🏠 MENU</button>
+    </div>
+  </div>
+</div>
+
+<div id="hud" style="display:none">
+  <div id="hud-top">
+    <div class="hud-badge" id="role-badge">🎭 HIDER</div>
+    <div class="hud-timer" id="timer">2:00</div>
+    <div class="hud-coins" id="coins-hud">🪙 0</div>
+  </div>
+  <div id="hearts">❤️❤️❤️</div>
+  <div id="score-box" style="display:none">🎯 SCORE<span id="score-val">0</span></div>
+  <div id="hiders-left" style="display:none">HIDERS<span id="hiders-val">3</span>left</div>
+  <div id="alert-seeker" style="display:none">⚠️ SEEKER NEARBY!</div>
+  <div id="crosshair" style="display:none"></div>
+  <div id="morph-hint" style="display:none">🎭 Press MORPH to transform!</div>
+  <div id="transform-label" style="display:none">🎭 TRANSFORMED</div>
+  <div id="flash"></div>
+  <div id="taunt-ring"></div>
+  <div id="msg"></div>
+  <div id="kbd-hint">WASD=Move | Mouse=Camera<br>Space=Jump | E=Morph | T=Taunt</div>
+</div>
+
+<div id="controls" style="display:none">
+  <div id="joy-area">
+    <div class="joy-base" id="joy-base">
+      <div class="joy-thumb" id="joy-thumb"></div>
+    </div>
+  </div>
+  <div id="cam-area"></div>
+  <div id="btns">
+    <div class="btn-row" id="hider-btns">
+      <button class="abtn abtn-taunt" id="btn-taunt">📣<br>TAUNT</button>
+      <button class="abtn abtn-jump" id="btn-jump">⬆️<br>JUMP</button>
+    </div>
+    <div class="btn-row">
+      <button class="abtn abtn-morph" id="btn-morph">🎭<br>MORPH</button>
+    </div>
+    <div class="btn-row" id="seeker-btns" style="display:none">
+      <button class="abtn abtn-shoot" id="btn-shoot">🔫<br>SHOOT</button>
+    </div>
+  </div>
+</div>
+
+<script type="importmap">
+  {
+    "imports": {
+      "three": "[https://unpkg.com/three@0.158.0/build/three.module.js](https://unpkg.com/three@0.158.0/build/three.module.js)",
+      "three/addons/": "[https://unpkg.com/three@0.158.0/examples/jsm/](https://unpkg.com/three@0.158.0/examples/jsm/)"
     }
   }
 </script>
@@ -272,7 +490,8 @@ function loadCharacterModel() {
     basePlayerModel = gltf.scene;
     playerAnimations = gltf.animations;
 
-    basePlayerModel.scale.set(0.015, 0.015, 0.015);
+    // 🔥 FIXED SCALE: Teen guna bada kar diya hai (0.015 -> 0.045) 🔥
+    basePlayerModel.scale.set(0.045, 0.045, 0.045);
     basePlayerModel.position.y = 0; 
     basePlayerModel.rotation.y = Math.PI; 
 
@@ -479,6 +698,7 @@ function buildProps(){PROP_DEFS.forEach(def=>{const g=makePropMesh(def);g.positi
 const player={pos:new THREE.Vector3(0,0,0),vel:new THREE.Vector3(),onGround:false,yaw:0,pitch:.22,shootCooldown:0,mesh:null};
 let playerMesh=null,transformedMesh=null,transformedDot=null;
 
+// 🔥 NO FALLBACK BOX, ONLY MECHANIC GIRL 🔥
 function buildPlayerMesh(role){
   if(playerMesh) scene.remove(playerMesh);
   
@@ -960,35 +1180,36 @@ function gameLoop() {
 
     player.shootCooldown = Math.max(0, player.shootCooldown - dt);
 
-    // 🔥 BGMI OVER-THE-SHOULDER CAMERA (FIXED) 🔥
-    const camDist = 3.5;         
-    const camHeightOffset = 1.6; // Mechanic girl ki height ke hisaab se adjust kiya hai
-    const camRightOffset = 1.0;  
+    // 🔥 BGMI OVER-THE-SHOULDER CAMERA (FIXED & ADJUSTED FOR LARGER CHARACTER) 🔥
+    const camDist = 4.5; // Thoda piche kiya (3.5 -> 4.5)
+    const camHeightOffset = 2.2; // Thoda upar kiya (1.6 -> 2.2)
+    const camRightOffset = 1.2; // Thoda side me kiya (1.0 -> 1.2)
 
-    // 1. Character ke kandhe (shoulder) ki position nikalo
+    // Character ke kandhe (shoulder) ki position nikalo
     const shoulderPos = player.pos.clone().add(new THREE.Vector3(0, camHeightOffset, 0));
     const right = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
     shoulderPos.add(right.multiplyScalar(camRightOffset));
 
-    // 2. Camera ko orbit math ke hisaab se set karo
+    // Camera ko orbit math ke hisaab se set karo
     const hDist = Math.cos(player.pitch) * camDist;
     const vDist = Math.sin(player.pitch) * camDist;
 
     const targetCamPos = new THREE.Vector3(
         shoulderPos.x + Math.sin(player.yaw) * hDist,
-        shoulderPos.y - vDist, // Jab upar dekhenge, camera niche aayega
+        shoulderPos.y - vDist, 
         shoulderPos.z + Math.cos(player.yaw) * hDist
     );
 
-    // 💥 BUG FIX: Camera ko zameen ke niche jaane se roko! (Ground Collision)
-    targetCamPos.y = Math.max(0.5, targetCamPos.y); // 0.5 meter se niche nahi jayega
+    // BUG FIX: Camera ko zameen ke niche jaane se roko! 
+    targetCamPos.y = Math.max(0.8, targetCamPos.y); 
 
     // Smooth camera movement
     camera.position.lerp(targetCamPos, 0.45);
     
-    // 3. Camera hamesha crosshair ki taraf aim karega
+    // Camera hamesha crosshair ki taraf aim karega
     const lookDir = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
-    lookDir.applyAxisAngle(right, player.pitch); 
+    const aimingRight = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
+    lookDir.applyAxisAngle(aimingRight, player.pitch); 
     
     const lookAtTarget = camera.position.clone().add(lookDir);
     camera.lookAt(lookAtTarget);
