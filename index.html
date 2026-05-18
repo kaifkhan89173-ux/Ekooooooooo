@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Prop Hunt 3D — Flat Ground & Smooth Joystick</title>
+<title>Prop Hunt 3D — Mechanic Girl & BGMI Aim</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none;touch-action:none;}
@@ -26,6 +26,7 @@ canvas{display:block;touch-action:none;}
 .ctrl-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;text-align:left;}
 .btn-start{background:linear-gradient(135deg,#ff6b35,#ff4444);border:none;border-radius:50px;padding:16px 56px;font-size:20px;font-weight:bold;color:#fff;cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:all .3s;box-shadow:0 8px 28px rgba(255,107,53,.5);}
 .btn-start:hover{transform:scale(1.06);box-shadow:0 12px 38px rgba(255,107,53,.7);}
+.btn-start:disabled{background:#555;cursor:not-allowed;transform:none;box-shadow:none;color:#aaa;}
 .vs-note{margin-top:16px;color:rgba(255,255,255,.28);font-size:12px;}
 #gameover{background:rgba(0,0,0,.93);width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;padding:20px;text-align:center;}
 .go-emoji{font-size:clamp(48px,10vw,88px);}
@@ -54,10 +55,10 @@ canvas{display:block;touch-action:none;}
 #score-box span{display:block;font-size:22px;font-weight:bold;color:#ff6b35;}
 #hiders-left{position:absolute;top:80px;right:14px;background:rgba(0,0,0,.7);border:2px solid #ff6b35;border-radius:12px;padding:8px 14px;color:#fff;font-size:13px;text-align:center;}
 #hiders-left span{display:block;font-size:22px;font-weight:bold;color:#ff6b35;}
-#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;}
-#crosshair::before,#crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.85);}
-#crosshair::before{width:2px;height:100%;left:50%;transform:translateX(-50%);}
-#crosshair::after{width:100%;height:2px;top:50%;transform:translateY(-50%);}
+/* 🔥 BGMI CROSSHAIR CSS 🔥 */
+#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;z-index:100;}
+#crosshair::before{content:'';position:absolute;width:5px;height:5px;background:rgba(255,255,255,1);border:1.5px solid #000;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);}
+#crosshair::after{display:none;}
 #morph-hint{position:absolute;bottom:252px;left:50%;transform:translateX(-50%);background:rgba(78,205,196,.92);border-radius:20px;padding:8px 20px;color:#fff;font-size:14px;font-weight:bold;animation:bob 1s infinite;white-space:nowrap;}
 @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
 #alert-seeker{position:absolute;top:148px;left:14px;background:rgba(255,0,0,.82);border-radius:10px;padding:5px 12px;color:#fff;font-size:13px;font-weight:bold;animation:pulse .5s infinite alternate;}
@@ -70,7 +71,7 @@ canvas{display:block;touch-action:none;}
 #joy-area{position:absolute;bottom:28px;left:26px;width:128px;height:128px;pointer-events:all;touch-action:none;}
 .joy-base{width:128px;height:128px;border-radius:50%;background:rgba(255,255,255,.1);border:3px solid rgba(255,255,255,.32);position:relative;touch-action:none;}
 .joy-thumb{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.48);border:2px solid rgba(255,255,255,.8);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;}
-#btns{position:absolute;bottom:28px;right:18px;display:flex;flex-direction:column;gap:10px;pointer-events:all;align-items:flex-end;touch-action:none;}
+#btns{position:absolute;bottom:28px;right:18px;display:flex;flex-direction:column;gap:10px;pointer-events:all;align-items:flex-end;touch-action:none;z-index:35;}
 .btn-row{display:flex;gap:10px;align-items:center;}
 .abtn{width:62px;height:62px;border-radius:50%;border:3px solid;font-size:10px;font-weight:bold;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1.2;text-align:center;touch-action:none;transition:transform .1s,opacity .1s;}
 .abtn:active{transform:scale(.88);opacity:.75;}
@@ -81,9 +82,41 @@ canvas{display:block;touch-action:none;}
 .abtn-morph.dim{opacity:.38;}
 .abtn-shoot{background:rgba(255,68,68,.25);border-color:#ff4444;width:70px;height:70px;font-size:11px;}
 .abtn-shoot:active{background:rgba(255,68,68,.7);box-shadow:0 0 18px #ff4444;}
-#cam-area{position:fixed;top:0;right:0;width:55%;height:calc(100vh - 220px);pointer-events:all;z-index:25;touch-action:none;}
+/* 🔥 BGMI RIGHT-HALF TOUCH AREA 🔥 */
+#cam-area{position:fixed;top:0;right:0;width:50%;height:100vh;pointer-events:all;z-index:25;touch-action:none;}
 @keyframes tauntRipple{0%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-50%) scale(5);}}
 </style>
+
+<script>
+  let selectedRole = 'hider';
+  
+  function selectRole(r) {
+    selectedRole = r;
+    document.getElementById('card-hider').className = 'role-card' + (r === 'hider' ? ' sel-hider' : '');
+    document.getElementById('card-seeker').className = 'role-card' + (r === 'seeker' ? ' sel-seeker' : '');
+    const grid = document.getElementById('ctrl-grid');
+    if (r === 'seeker') {
+      grid.innerHTML = `<span>⬆️ WASD / Arrows</span><span>Move</span><span>📷 Right Swipe / Mouse</span><span>Camera</span><span>⬛ Space / Jump btn</span><span>Jump</span><span>🔫 F / Shoot btn</span><span>Shoot props</span>`;
+    } else {
+      grid.innerHTML = `<span>⬆️ WASD / Arrows</span><span>Move</span><span>📷 Right Swipe / Mouse</span><span>Camera</span><span>⬛ Space / Jump btn</span><span>Jump</span><span>🎭 E / Morph btn</span><span>Transform</span><span>📣 T / Taunt btn</span><span>Taunt (+coins!)</span>`;
+    }
+  }
+
+  function startGame() {
+    if (window.gameStartFunction) {
+      window.gameStartFunction(selectedRole);
+    } else {
+      alert("Please wait a few seconds, 3D Engine is still loading! 🚀");
+    }
+  }
+
+  function showMenu() {
+    if (window.gameShowMenuFunction) {
+      window.gameShowMenuFunction();
+    }
+  }
+</script>
+
 </head>
 <body>
 
@@ -116,7 +149,7 @@ canvas{display:block;touch-action:none;}
         <span>📣 T / Taunt btn</span><span>Taunt (+coins!)</span>
       </div>
     </div>
-    <button class="btn-start" onclick="startGame()">▶ START MATCH</button>
+    <button class="btn-start" id="start-btn" onclick="startGame()" disabled>⏳ LOADING 3D...</button>
     <div class="vs-note">VS 3 AI opponents • 2-minute matches • Earn coins!</div>
   </div>
 
@@ -191,20 +224,7 @@ canvas{display:block;touch-action:none;}
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-window.selectRole = selectRole;
-window.startGame = startGame;
-window.showMenu = showMenu;
-
 const G={role:'hider',phase:'menu',timeLeft:120,coins:0,health:3,score:0,kills:0,survivalTime:0,isTransformed:false,currentPropType:null,nearbyPropId:null,timerInterval:null,tauntActive:false,caughtFlash:false,wallet:0};
-
-function selectRole(r){
-  G.role=r;
-  document.getElementById('card-hider').className='role-card'+(r==='hider'?' sel-hider':'');
-  document.getElementById('card-seeker').className='role-card'+(r==='seeker'?' sel-seeker':'');
-  const grid=document.getElementById('ctrl-grid');
-  if(r==='seeker'){grid.innerHTML=`<span>⬆️ WASD / Arrows</span><span>Move</span><span>📷 Right Swipe / Mouse</span><span>Camera</span><span>⬛ Space / Jump btn</span><span>Jump</span><span>🔫 F / Shoot btn</span><span>Shoot props</span>`;}
-  else{grid.innerHTML=`<span>⬆️ WASD / Arrows</span><span>Move</span><span>📷 Right Swipe / Mouse</span><span>Camera</span><span>⬛ Space / Jump btn</span><span>Jump</span><span>🎭 E / Morph btn</span><span>Transform</span><span>📣 T / Taunt btn</span><span>Taunt (+coins!)</span>`;}
-}
 
 const renderer=new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'}); 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
@@ -212,7 +232,6 @@ renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace; 
-
 document.body.insertBefore(renderer.domElement,document.body.firstChild);
 
 const scene=new THREE.Scene();
@@ -240,21 +259,21 @@ function box(w,h,d,color,opts={}){return new THREE.Mesh(new THREE.BoxGeometry(w,
 function cyl(rt,rb,h,seg,color,opts={}){return new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),new THREE.MeshLambertMaterial({color,...opts}));}
 function sph(r,color,opts={}){return new THREE.Mesh(new THREE.SphereGeometry(r,8,6),new THREE.MeshLambertMaterial({color,...opts}));}
 
-// ─── CHARACTER LOADING LOGIC ───
+// 🔥 MECHANIC GIRL LOADING LOGIC 🔥
 let basePlayerModel = null;
 let playerAnimations = [];
 let playerMixer = null;
 let currentAction = null;
-let fallbackBox = null; 
 
 function loadCharacterModel() {
   const loader = new GLTFLoader();
-  const charUrl = 'luoli_run.glb'; 
-
-  loader.load(charUrl, function (gltf) {
+  
+  // Nayi Mechanic Girl Model ka path
+  loader.load('girl_mechanic.glb', function (gltf) { 
     basePlayerModel = gltf.scene;
     playerAnimations = gltf.animations;
 
+    // Scale ko zaroorat ke hisaab se adjust kar lena
     basePlayerModel.scale.set(0.015, 0.015, 0.015);
     basePlayerModel.position.y = 0; 
     basePlayerModel.rotation.y = Math.PI; 
@@ -267,12 +286,21 @@ function loadCharacterModel() {
     });
 
     if (playerMesh && !G.isTransformed) {
-      if (fallbackBox) {
-        playerMesh.remove(fallbackBox);
-        fallbackBox = null;
+      // Purane saare parts ko hata do
+      while(playerMesh.children.length > 0){ 
+          playerMesh.remove(playerMesh.children[0]); 
       }
+      
+      // Naya model add karo
       playerMesh.add(basePlayerModel);
       setupAnimations();
+      
+      // Agar seeker hai toh red dot wapas add karo
+      if(G.role === 'seeker'){
+          const ind = sph(0.2, 0xff0000, {emissive: 0xff0000});
+          ind.position.y = 1.6;
+          playerMesh.add(ind);
+      }
     }
   });
 }
@@ -294,7 +322,6 @@ function loadCustomMap(){
 
   loader.load(modelUrl, function (gltf) {
     customMapModel = gltf.scene;
-    
     customMapModel.scale.set(6, 0.01, 6); 
     customMapModel.position.set(0, 0, 0);
     customMapModel.traverse((node) => {
@@ -335,37 +362,6 @@ function loadTrees(){
   });
 }
 
-// ─── REALISTIC TREE LOADING LOGIC (NEW) ───
-let realisticTreeModel = null;
-function loadRealisticTrees(){
-  const loader = new GLTFLoader();
-  const treeUrl = 'realistic_tree.glb'; 
-
-  loader.load(treeUrl, function (gltf) {
-    realisticTreeModel = gltf.scene;
-    realisticTreeModel.traverse((node) => {
-      if (node.isMesh) {
-        node.castShadow = true;
-        node.receiveShadow = true;
-      }
-    });
-
-    const realisticTreePositions = [ 
-      [12, 0, 10], [-12, 0, -10], [18, 0, -5], [-18, 0, 5], 
-      [5, 0, -25], [-5, 0, 25] 
-    ];
-    
-    realisticTreePositions.forEach(pos => {
-      const treeClone = realisticTreeModel.clone();
-      // Agar tree ki size zyada badi ya choti ho toh 1, 1, 1 ko change karke adjust karein (e.g. 0.5, 0.5, 0.5)
-      treeClone.scale.set(1, 1, 1); 
-      treeClone.position.set(pos[0], pos[1], pos[2]);
-      treeClone.rotation.y = Math.random() * Math.PI * 2;
-      scene.add(treeClone);
-    });
-  });
-}
-
 // ─── ROCK LOADING LOGIC ───
 let rockModel = null;
 function loadRocks(){
@@ -399,16 +395,14 @@ function loadRocks(){
   });
 }
 
-// ─── NEW EXTRA MODEL LOGIC (Sloped Dirt Path) ───
+// ─── EXTRA MODEL LOGIC (Sloped Dirt Path) ───
 let extraModel = null;
 function loadExtraModel(){
   const loader = new GLTFLoader();
-  
   const modelUrl = 'Sloped_dirt_path.glb'; 
 
   loader.load(modelUrl, function (gltf) {
     extraModel = gltf.scene;
-    
     extraModel.traverse((node) => {
       if (node.isMesh) {
         node.castShadow = true;
@@ -417,25 +411,22 @@ function loadExtraModel(){
     });
 
     const modelPositions = [ 
-      [0, 0, 0],      
-      [-15, 0, 15],   
-      [18, 0, -18]    
+      [0, 0, 0],     
+      [-15, 0, 15],  
+      [18, 0, -18]   
     ];
     
     const baseScale = 1.0; 
 
     modelPositions.forEach((pos, index) => {
       const modelClone = extraModel.clone();
-      
       modelClone.scale.set(baseScale, baseScale, baseScale); 
       modelClone.position.set(pos[0], pos[1] + 0.1, pos[2]); 
       modelClone.rotation.y = (Math.PI / 2) * index; 
-      
       scene.add(modelClone);
     });
   });
 }
-
 
 const PROP_DEFS=[
   {id:'p1',type:'crate',pos:[-15,0,-10],col:0x8B6914,sx:1,sy:1,sz:1},
@@ -494,6 +485,7 @@ function buildProps(){PROP_DEFS.forEach(def=>{const g=makePropMesh(def);g.positi
 const player={pos:new THREE.Vector3(0,0,0),vel:new THREE.Vector3(),onGround:false,yaw:0,pitch:.22,shootCooldown:0,mesh:null};
 let playerMesh=null,transformedMesh=null,transformedDot=null;
 
+// 🔥 NO FALLBACK BOX, ONLY MECHANIC GIRL 🔥
 function buildPlayerMesh(role){
   if(playerMesh) scene.remove(playerMesh);
   
@@ -502,14 +494,7 @@ function buildPlayerMesh(role){
   if(basePlayerModel) {
     playerMesh.add(basePlayerModel);
     setupAnimations();
-  } else {
-    fallbackBox = new THREE.Group();
-    const bc=role==='hider'?0x4ecdc4:0xff6b35,lc=role==='hider'?0x1a237e:0xb71c1c;
-    const body=box(.5,.7,.3,bc);body.position.y=.35;body.castShadow=true;fallbackBox.add(body);
-    const head=box(.4,.4,.4,0xf8e1c8);head.position.y=1;head.castShadow=true;fallbackBox.add(head);
-    if(role==='seeker'){const gun=box(.1,.1,.5,0x333333);gun.position.set(.35,.35,-.28);fallbackBox.add(gun);}
-    playerMesh.add(fallbackBox);
-  }
+  } 
   
   if(role==='seeker'){
     const ind = sph(0.2, 0xff0000, {emissive: 0xff0000});
@@ -573,10 +558,14 @@ function buildAIHiders(){
 const bullets=[];
 const bulletGeo=new THREE.SphereGeometry(.08,6,6);
 const bulletMat=new THREE.MeshBasicMaterial({color:0xffff00});
+
+// 🔥 BGMI BULLET SPAWN (From Camera Crosshair) 🔥
 function spawnBullet(){
-  const dir=new THREE.Vector3(-Math.sin(player.yaw)*Math.cos(player.pitch),-Math.sin(player.pitch),-Math.cos(player.yaw)*Math.cos(player.pitch)).normalize();
-  const mesh=new THREE.Mesh(bulletGeo,bulletMat);mesh.position.copy(player.pos).y+=0.8;scene.add(mesh);
-  bullets.push({mesh,dir,life:1.5});
+  const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+  const mesh = new THREE.Mesh(bulletGeo, bulletMat);
+  mesh.position.copy(camera.position).addScaledVector(dir, 1.0);
+  scene.add(mesh);
+  bullets.push({mesh, dir, life:1.5});
 }
 
 const keys={};
@@ -656,14 +645,15 @@ camArea.addEventListener('touchstart', e => {
   camTouch.ly = e.changedTouches[0].clientY;
 }, {passive: false});
 
+// 🔥 INCREASED BGMI PITCH LIMITS 🔥
 camArea.addEventListener('touchmove', e => {
   e.preventDefault();
   if(G.phase !== 'playing') return;
   for(let i=0; i<e.changedTouches.length; i++) {
     if(e.changedTouches[i].identifier === camTouch.pid) {
       const t = e.changedTouches[i];
-      player.yaw -= (t.clientX - camTouch.lx) * 0.008;
-      player.pitch = Math.max(-0.6, Math.min(0.7, player.pitch + (t.clientY - camTouch.ly) * 0.008));
+      player.yaw -= (t.clientX - camTouch.lx) * 0.005;
+      player.pitch = Math.max(-1.2, Math.min(1.2, player.pitch + (t.clientY - camTouch.ly) * 0.005));
       camTouch.lx = t.clientX; camTouch.ly = t.clientY;
       break;
     }
@@ -680,12 +670,12 @@ camArea.addEventListener('touchcancel', endCam);
 
 let mouseDown=false, lastMX=0, lastMY=0;
 renderer.domElement.addEventListener('mousedown',e=>{mouseDown=true;lastMX=e.clientX;lastMY=e.clientY;});
-renderer.domElement.addEventListener('mousemove',e=>{if(!mouseDown||G.phase!=='playing')return;player.yaw-=(e.clientX-lastMX)*.008;player.pitch=Math.max(-.6,Math.min(.7,player.pitch+(e.clientY-lastMY)*.008));lastMX=e.clientX;lastMY=e.clientY;});
+renderer.domElement.addEventListener('mousemove',e=>{if(!mouseDown||G.phase!=='playing')return;player.yaw-=(e.clientX-lastMX)*.005;player.pitch=Math.max(-1.2,Math.min(1.2,player.pitch+(e.clientY-lastMY)*.005));lastMX=e.clientX;lastMY=e.clientY;});
 renderer.domElement.addEventListener('mouseup',()=>mouseDown=false);
 renderer.domElement.addEventListener('click',()=>{if(G.role==='seeker'&&G.phase==='playing')doShoot();});
 renderer.domElement.addEventListener('dblclick',()=>renderer.domElement.requestPointerLock());
 document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement===renderer.domElement){document.addEventListener('mousemove',onLockMove);}else{document.removeEventListener('mousemove',onLockMove);}});
-function onLockMove(e){if(G.phase!=='playing')return;player.yaw-=e.movementX*.008;player.pitch=Math.max(-.6,Math.min(.7,player.pitch+e.movementY*.008));}
+function onLockMove(e){if(G.phase!=='playing')return;player.yaw-=e.movementX*.005;player.pitch=Math.max(-1.2,Math.min(1.2,player.pitch+e.movementY*.005));}
 
 function bindBtn(id, fn) {
   const el = document.getElementById(id);
@@ -800,7 +790,9 @@ function showMsg(txt, dur=1800) {
   setTimeout(() => el.style.opacity = '0', dur);
 }
 
-function startGame() {
+// 🔥 EXPOSED START FUNCTION FOR FAST UI 🔥
+window.gameStartFunction = function(role) {
+  G.role = role;
   G.phase='playing'; G.timeLeft=120; G.coins=0; G.health=3;
   G.score=0; G.kills=0; G.survivalTime=0;
   G.isTransformed=false; G.currentPropType=null; G.nearbyPropId=null;
@@ -886,7 +878,7 @@ function endGame() {
   document.getElementById('go-tip').textContent = tips[Math.floor(Math.random()*tips.length)];
 }
 
-function showMenu() {
+window.gameShowMenuFunction = function() {
   G.phase = 'menu';
   document.getElementById('hud').style.display='none';
   document.getElementById('controls').style.display='none';
@@ -948,10 +940,10 @@ function gameLoop() {
     player.pos.x = Math.max(-MAP_HALF*2, Math.min(MAP_HALF*2, player.pos.x));
     player.pos.z = Math.max(-MAP_HALF*2, Math.min(MAP_HALF*2, player.pos.z));
 
+    // 🔥 CHARACTER FACE CROSSHAIR 🔥
     if(playerMesh) {
       playerMesh.position.copy(player.pos);
-      if(Math.abs(mx) > .01 || Math.abs(mz) > .01)
-        playerMesh.rotation.y = player.yaw;
+      playerMesh.rotation.y = player.yaw;
     }
     
     if (playerMixer) {
@@ -975,13 +967,26 @@ function gameLoop() {
 
     player.shootCooldown = Math.max(0, player.shootCooldown - dt);
 
-    const camDist = 5.2, camH = 2.8; 
-    const cx = player.pos.x + Math.sin(player.yaw) * camDist;
-    const cz = player.pos.z + Math.cos(player.yaw) * camDist;
-    const cy = player.pos.y + camH + Math.sin(player.pitch) * camDist * .5;
+    // 🔥 BGMI OVER-THE-SHOULDER CAMERA 🔥
+    const camDist = 3.5;         
+    const camHeightOffset = 1.8; 
+    const camRightOffset = 1.0;  
+
+    const fwd = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
+    const right = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
     
-    camera.position.lerp(new THREE.Vector3(cx, cy, cz), 0.45);
-    camera.lookAt(player.pos.x, player.pos.y + 1.5, player.pos.z);
+    const pitchAxis = right.clone();
+    const aimFwd = fwd.clone().applyAxisAngle(pitchAxis, player.pitch);
+
+    const targetCamPos = player.pos.clone()
+        .add(new THREE.Vector3(0, camHeightOffset, 0))
+        .add(right.clone().multiplyScalar(camRightOffset))
+        .add(aimFwd.clone().multiplyScalar(-camDist));
+
+    camera.position.lerp(targetCamPos, 0.45);
+    
+    const lookAtTarget = camera.position.clone().add(aimFwd);
+    camera.lookAt(lookAtTarget);
 
     updateAISeekers(dt);
     updateAIHiders(dt);
@@ -995,7 +1000,6 @@ function gameLoop() {
 
 loadCustomMap();
 loadTrees();  
-loadRealisticTrees(); // <---- Yahan maine call add ki hai
 loadRocks(); 
 loadExtraModel(); 
 loadCharacterModel(); 
@@ -1009,6 +1013,13 @@ styleTag.textContent = `
   100% { opacity:0; transform:translate(-50%,-50%) scale(5); }
 }`;
 document.head.appendChild(styleTag);
+
+// 🔥 GAME READY - ENABLE START BUTTON 🔥
+const startBtn = document.getElementById('start-btn');
+if(startBtn) {
+  startBtn.textContent = '▶ START MATCH';
+  startBtn.disabled = false;
+}
 </script>
 </body>
 </html>
